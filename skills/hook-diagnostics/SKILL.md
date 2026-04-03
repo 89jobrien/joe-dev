@@ -35,15 +35,9 @@ To list currently loaded hooks, run in Claude Code:
 
 To check hook failure logs from post-tool-track-failures.py:
 
-```bash
-ls -lt $HOME/.claude/hooks/failures/ | head -20
-```
-
-If the failures directory doesn't exist, no failures have been recorded this session.
-
 ## Reading Failure Logs
 
-Failure logs are written by `post-tool-track-failures.py` as JSON entries:
+Failure logs are written by `post-tool-track-failures.py` as JSON entries to a single file:
 
 ```bash
 # Show last 10 failures

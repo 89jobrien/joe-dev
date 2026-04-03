@@ -32,7 +32,7 @@ Also check the current working directory repo.
 For each repo with a HANDOFF.yaml:
 
 ```bash
-ls ~/dev/*/HANDOFF.yaml 2>/dev/null
+for f in ~/dev/*/HANDOFF.yaml; do [ -f "$f" ] && echo "$f"; done
 ```
 
 Read each file and extract: `in_progress`, `next_session`, `blockers`, `updated`.

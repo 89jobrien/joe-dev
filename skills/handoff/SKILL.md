@@ -48,7 +48,7 @@ Before writing, collect:
 
 1. **Completed:** Ask user "What did we finish this session?" or infer from git log:
    ```bash
-   git log --oneline $(git log --format="%H" --since="8 hours ago" | tail -1)..HEAD
+   git log --oneline --since="8 hours ago"
    ```
 
 2. **In progress:** What was started but not finished? Check git status for uncommitted work.
