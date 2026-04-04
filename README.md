@@ -8,8 +8,8 @@ multi-repo pulse.
 Install both plugins for full session-start experience:
 
 ```bash
-cc --plugin-dir ~/.claude/plugins/joe-dev
-cc --plugin-dir ~/.claude/plugins/joe-secrets
+claude --plugin-dir ~/.claude/plugins/joe-dev
+claude --plugin-dir ~/.claude/plugins/joe-secrets
 ```
 
 ## Skills
