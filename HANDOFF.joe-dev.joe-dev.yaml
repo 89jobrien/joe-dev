@@ -1,0 +1,19 @@
+project: joe-dev
+id: joe-dev
+updated: 2026-04-03
+
+items:
+  - id: joe-dev-1
+    name: install-and-test-plugins
+    priority: P1
+    status: open
+    title: Install and test both plugins in a live Claude session
+    description: |
+      Install joe-dev and joe-secrets via `claude --plugin-dir` and verify skills trigger
+      correctly, agents appear, and the SessionStart hook fires on session start.
+    files: []
+
+log:
+  - date: 2026-04-03
+    summary: Built full plugin from scratch — 8 skills, 5 agents, published to GitHub
+    commits: [6266292, 6454b01, ab19dbb, 765fe7e, e68d373, 9eab53c]
