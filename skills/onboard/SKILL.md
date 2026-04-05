@@ -5,104 +5,114 @@ description: Use when a user says "onboard me", "how do I set up atelier", "what
   atelier nor sanctum appear to have been verified in a live session before.
 ---
 
-# onboard
+# onboard — atelier + sanctum setup
 
-Walk through atelier + sanctum installation, verify both plugins are working, and confirm
-the SessionStart hook chain fires correctly.
+## Overview
 
-## Step 1: Overview
+Four local plugins form the full dev workflow:
 
-Introduce the two-plugin setup:
+| Plugin | Purpose |
+|--------|---------|
+| **atelier** | Rust gates, code review, CI safety, multi-repo pulse, session handoffs |
+| **sanctum** | 1Password auth validation, `.envrc` chain tracing, `op://` conflict detection |
+| **hand** | Standalone session handoff toolkit (HANDOFF.yaml + SQLite) |
+| **orca-strait** | Parallel TDD sub-agent orchestrator for Rust workspaces |
 
-> **atelier** — personal dev workflow: Rust gates, code review, CI safety, multi-repo pulse,
-> session handoffs.
->
-> **sanctum** — secrets and env management: 1Password auth validation, `.envrc` chain tracing,
-> `op://` conflict detection.
->
-> Both must be installed for the full session-start experience. sanctum's SessionStart hook
-> runs first (secrets), then invokes atelier's `handon` skill (work orientation).
+atelier + sanctum are the core pair. hand and orca-strait are opt-in.
 
-## Step 2: Verify Prerequisites
+## Step 1: Prerequisites
 
 ```bash
-which claude op direnv
+which claude op direnv sqlite3 just
 ```
 
 - `claude` — Claude Code CLI (required)
-- `op` — 1Password CLI (required for sanctum)
+- `op` — 1Password CLI (required for sanctum): `brew install 1password-cli && op signin`
 - `direnv` — optional; sanctum degrades gracefully without it
+- `sqlite3` — local handoff DB (ships with macOS)
+- `just` — task runner for init scripts: `brew install just`
 
-If `op` is missing: `brew install 1password-cli` and sign in with `op signin`.
+## Step 2: Clone and Init All Plugins
 
-## Step 3: Install Both Plugins
-
-```bash
-claude --plugin-dir ~/dev/atelier --plugin-dir ~/dev/sanctum
-```
-
-Or if installed to `~/.claude/plugins/`:
+Each plugin repo has a `just init` recipe that wires hooks, checks prerequisites, and installs
+the plugin. Run with user approval for any missing tool.
 
 ```bash
-claude --plugin-dir ~/.claude/plugins/atelier --plugin-dir ~/.claude/plugins/sanctum
+# Core pair (always install both)
+git clone https://github.com/89jobrien/atelier ~/dev/atelier
+git clone https://github.com/89jobrien/sanctum ~/dev/sanctum
+cd ~/dev/atelier && just init
+cd ~/dev/sanctum && just init
+
+# Optional
+git clone https://github.com/89jobrien/hand ~/dev/hand
+git clone https://github.com/89jobrien/orca-strait ~/dev/orca-strait
+cd ~/dev/hand && just init
+cd ~/dev/orca-strait && just init
 ```
 
-## Step 4: Smoke Test — Skills
+Each `just init` will:
+1. Set `core.hooksPath = .githooks` — post-commit auto-reinstalls plugin on source changes
+2. Register the local marketplace at `~/.claude/plugins/local-marketplace`
+3. Prompt for approval if required tools are missing
+4. Install the plugin via `claude plugin install <name>@local`
 
-In the new Claude session, trigger each skill to confirm it loads:
+## Step 3: Smoke Test — Skills
+
+In a new Claude session, trigger each skill to confirm it loads:
 
 | Skill | Test phrase |
 |-------|-------------|
-| onboard | `/atelier:onboard` |
-| handon | "what's outstanding" |
-| cargo-gate | "run gates" |
-| hook-diagnostics | "show hook status" |
-| git-guard | "safe to commit" |
-| op-resolver | `/sanctum:op-resolver` |
+| atelier:onboard | `/atelier:onboard` |
+| atelier:handon | "what's outstanding" |
+| atelier:cargo-gate | "run gates" |
+| atelier:hook-diagnostics | "show hook status" |
+| atelier:git-guard | "safe to commit" |
+| sanctum:op-resolver | `/sanctum:op-resolver` |
+| hand:on | `/hand:on` |
+| orca-strait | `/orca-strait --dry-run` |
 
-Expected: Claude responds using the skill content, not a generic answer.
+Expected: Claude responds using skill content, not a generic answer.
 
-## Step 5: Smoke Test — SessionStart Hook
+## Step 4: Smoke Test — SessionStart Hook
 
-Start a fresh Claude session (close and reopen or `claude` in a new terminal). Within the
-first response, Claude should output a `[sanctum session-start]` summary block showing:
+Start a fresh Claude session. Within the first response, Claude should output a sanctum summary:
 
 ```
 1Password: 2 account(s) authed.
 Direnv chain: N .envrc file(s) found, N op:// refs.
 ```
 
-If this block is absent, check:
-
+If absent:
 ```bash
-# Confirm hook script is executable
-ls -l ~/dev/sanctum/hooks/op-resolver-startup.sh
-
-# Confirm plugin is loaded
-claude --list-plugins 2>/dev/null || echo "check plugin-dir flag"
+ls -l ~/dev/sanctum/hooks/
+claude plugin list | grep sanctum
 ```
 
-## Step 6: Smoke Test — Agents
-
-Run `/forge` and `/sentinel` to confirm agent delegation to devkit is wired:
-
-- `/forge` — should open a dev companion session
-- `/sentinel` — should open a code review session
-
-If either fails with "unknown command", devkit may not be installed or accessible.
-
-## Step 7: Verify Handoff Setup
+## Step 5: Verify Handoff Setup
 
 ```bash
 ls ~/dev/*/HANDOFF.*.yaml 2>/dev/null | head -10
+sqlite3 ~/.local/share/atelier/handoff.db "SELECT project, id, status FROM items;" 2>/dev/null
 ```
 
-If no HANDOFF files exist, run `/hand:off` at session end to create the first one.
+If no HANDOFF files exist, run `/hand:off` or `/atelier:handoff` at session end to create one.
+
+## Auto-Reinstall on Edit
+
+Every plugin repo has `.githooks/post-commit` that auto-reinstalls the plugin when
+`skills/`, `agents/`, `hooks/`, or `.claude-plugin/` files change. This requires
+`core.hooksPath = .githooks` — set by `just init`.
+
+To reinstall manually without a full init:
+```bash
+cd ~/dev/<plugin> && just reinstall
+```
 
 ## Onboarding Complete
 
-> atelier and sanctum are installed and verified. At every new session:
+> At every new session:
 > 1. sanctum validates 1Password auth and traces your `.envrc` chain
-> 2. handon surfaces outstanding HANDOFF items across active repos
+> 2. atelier:handon surfaces outstanding HANDOFF items across active repos
 >
 > Run `/atelier:onboard` again any time to re-verify the setup.
