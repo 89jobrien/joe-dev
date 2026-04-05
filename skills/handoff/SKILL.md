@@ -9,7 +9,8 @@ description: Use at end of a session to update HANDOFF.yaml with completed work,
 
 ## Overview
 
-`HANDOFF.yaml` is the committed source of truth for task/workflow tracking. It syncs with doob.
+`HANDOFF.yaml` is the committed source of truth for task/workflow tracking. Item status is also
+mirrored to a local SQLite database for cross-session queries without parsing YAML.
 Project state (build, tests, branch) lives separately in `.ctx/HANDOFF.state.yaml` — generated,
 never committed. A rendered reference doc is also written to `.ctx/HANDOFF.md`.
 
@@ -17,7 +18,7 @@ never committed. A rendered reference doc is also written to `.ctx/HANDOFF.md`.
 
 | File | Location | Committed | Purpose |
 |---|---|---|---|
-| `HANDOFF.<project>.<base>.yaml` | repo root | yes | Tasks, items, log — doob source of truth |
+| `HANDOFF.<project>.<base>.yaml` | repo root | yes | Tasks, items, log — committed source of truth |
 | `.ctx/HANDOFF.state.yaml` | `.ctx/` | no | Project snapshot — build/tests/branch/notes |
 | `.ctx/HANDOFF.md` | `.ctx/` | no | Generated reference doc (rendered view of both) |
 
@@ -54,10 +55,9 @@ updated: <YYYY-MM-DD>
 
 items:
   - id: <prefix>-<n>          # sequential integer from 1, no leading zeros, never reuse
-    doob_uuid: <uuid>         # written back by doob handoff sync; omit on first write
     name: <kebab-slug>        # immutable after creation
     priority: P0 | P1 | P2   # immutable after creation
-    status: open | done | parked | blocked  # mutable; doob wins on conflict
+    status: open | done | parked | blocked  # mutable
     title: <one-line>         # immutable after creation
     description: <detail>     # immutable after creation, null ok
     files: [<path>]           # immutable after creation, omit if empty
@@ -83,7 +83,8 @@ item and park the old one.
 
 ### human-edit entries
 
-When a human directly edits a field in HANDOFF.yaml (bypassing doob), record it explicitly:
+When a human directly edits a field in HANDOFF.yaml outside of a skill session, record it
+explicitly:
 
 ```yaml
 extra:
@@ -95,11 +96,9 @@ extra:
 ```
 
 Rules:
-- **Sync priority**: items with an unreviewed `human-edit` entry win over doob on that field.
-  `doob handoff sync` updates doob to match rather than overwriting.
 - **Unreviewed** = no `reviewed` field on the entry, or `reviewed` is absent.
 - **Acknowledged** = `handon` has surfaced it and the user has seen it; `handoff` sets
-  `reviewed: <today>` on the entry at session end.
+  `reviewed: <today>` on the entry at session end and updates the SQLite record to match.
 - Any field can be human-edited this way, but `status` is the most common case.
 
 ## .ctx/HANDOFF.state.yaml Schema
@@ -161,14 +160,37 @@ Emit clean YAML. No anchors, no aliases.
 
 Create `.ctx/` if it does not exist. Overwrite completely with current state from step 1.
 
-### 6. Sync to doob
+### 6. Sync to SQLite
+
+Write item status to the local handoff database:
 
 ```bash
-doob handoff sync --file <path-to-HANDOFF.yaml>
+DB="$HOME/.local/share/atelier/handoff.db"
+mkdir -p "$(dirname $DB)"
+sqlite3 "$DB" "CREATE TABLE IF NOT EXISTS items (
+  project TEXT NOT NULL,
+  id TEXT NOT NULL,
+  name TEXT,
+  priority TEXT,
+  status TEXT,
+  completed TEXT,
+  updated TEXT,
+  PRIMARY KEY (project, id)
+);"
 ```
 
-Writes `doob_uuid` back for new items, pulls status updates from doob, merges `extra`
-bidirectionally. Skip and note if `doob` is not on PATH.
+For each item in `items`, upsert:
+
+```bash
+sqlite3 "$DB" "INSERT INTO items (project, id, name, priority, status, completed, updated)
+  VALUES ('<project>', '<id>', '<name>', '<priority>', '<status>', '<completed>', '<today>')
+  ON CONFLICT(project, id) DO UPDATE SET
+    status=excluded.status,
+    completed=excluded.completed,
+    updated=excluded.updated;"
+```
+
+Skip if `sqlite3` is not on PATH and note it in output.
 
 ### 7. Generate .ctx/HANDOFF.md
 

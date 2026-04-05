@@ -51,16 +51,22 @@ Branch: <branch> | Build: <build> | Tests: <tests>
 
 If the file is absent, omit the state line rather than guessing.
 
-### 3. Pull latest state from doob
+### 3. Pull latest state from SQLite
 
-Before parsing the local file, sync doob → HANDOFF.yaml to pick up any status changes made
-outside this session:
+Before parsing the local file, check the local SQLite database for status overrides written
+outside this session (e.g. by another tool or a manual update):
 
 ```bash
-doob handoff sync --file <path-to-HANDOFF.yaml>
+DB="$HOME/.local/share/atelier/handoff.db"
+sqlite3 "$DB" "SELECT id, status, completed FROM items WHERE project = '<project>';" 2>/dev/null
 ```
 
-If `doob` is not on PATH, skip and continue with the local file as-is.
+For each row returned, if the SQLite `status` differs from the YAML `status`, prefer SQLite and
+update the in-memory copy before triaging. Do not write back to HANDOFF.yaml here — that happens
+in step 9.
+
+If `sqlite3` is not on PATH or the database does not exist, skip and continue with the local
+file as-is.
 
 ### 4. Review on wake
 
@@ -83,7 +89,7 @@ proceeding to P0 triage. After the user acknowledges, note which items were revi
 ### 5. Parse items
 
 From `HANDOFF.yaml`: read `items` list directly. Filter to `status: open` or `status: blocked`.
-Items with a `doob_uuid` are tracked in doob — their status is authoritative from the sync above.
+Apply any SQLite overrides from step 3 before triaging.
 
 From `HANDOFF.md`: read the "Known Gaps", "Next Up", "Parked", or "Remaining Work" sections.
 Infer priority:
@@ -136,7 +142,7 @@ P2:
 Then update `HANDOFF.yaml`:
 - Mark done items `status: done`, add `completed: <today>`
 - Add `log` entry for this session (one-liner, prepend to list)
-- Run `doob handoff sync --file <path>` to push status changes to doob
+- Upsert all items to SQLite (see handoff skill step 6 for schema)
 - Commit: `git add HANDOFF.yaml && git commit -m "docs: update handoff"`
 
 ## Edge Cases

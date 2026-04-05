@@ -3,7 +3,6 @@ id: atelier
 updated: 2026-04-08
 items:
 - id: atelier-1
-  doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
   name: install-and-test-plugins
   priority: P1
   status: open
@@ -14,7 +13,6 @@ items:
   files: []
   extra: []
 - id: atelier-2
-  doob_uuid: ab4422fd-ccd2-43d9-b1cc-c58f9aa32429
   name: handover-diagram-script
   priority: P1
   status: done
