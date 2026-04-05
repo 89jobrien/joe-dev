@@ -27,13 +27,15 @@ claude --plugin-dir ~/.claude/plugins/joe-secrets
 
 ## Agents
 
+> Currently delegates agent logic to devkit and likely always will
+
 | Agent | Purpose |
 |-------|---------|
-| sentinel | Structured code review (delegates to devkit) |
-| forge | Dev companion — design, debug, refactor (delegates to devkit) |
-| herald | Cross-repo synthesis → Obsidian (delegates to devkit) |
-| conductor | devloop → doob → devkit pipeline (delegates to devkit) |
-| oxidizer | Rust-specific review: clippy, unsafe, edition 2024 (delegates to devkit) |
+| sentinel | Structured code review |
+| forge | Dev companion — design, debug, refactor |
+| herald | Cross-repo synthesis → Obsidian |
+| conductor | devloop → doob → devkit pipeline |
+| oxidizer | Rust-specific review: clippy, unsafe, edition 2024 |
 
 ## Notes
 
