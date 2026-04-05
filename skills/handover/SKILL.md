@@ -85,10 +85,10 @@ Keep prose minimal. No headers longer than 3 words. No HTML. No emoji.
 
 ## Mermaid Diagrams
 
-Run `scripts/generate-diagrams.py` from the repo root to produce all diagrams:
+Run `skills/handover/scripts/generate-diagrams.py` from the repo root to produce all diagrams:
 
 ```bash
-uv run scripts/generate-diagrams.py --handoff <path-to-HANDOFF.yaml>
+uv run skills/handover/scripts/generate-diagrams.py --handoff <path-to-HANDOFF.yaml>
 ```
 
 Embed the full stdout output verbatim into the Diagrams section of `.ctx/HANDOVER.md`.

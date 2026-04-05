@@ -1,3 +1,4 @@
 .claude/*.local.md
 .ctx/
 __pycache__/
+skills/*/scripts/test_*.py

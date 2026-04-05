@@ -4,16 +4,17 @@
 # dependencies = ["pyyaml"]
 # ///
 """
-generate-diagrams.py — emit four Mermaid diagram blocks from a HANDOFF yaml file.
+generate-diagrams.py — emit Mermaid diagram blocks from a HANDOFF yaml file.
 
 Usage:
-    python3 generate-diagrams.py --handoff <path-to-HANDOFF.*.yaml> [--diagram <name>]
+    uv run generate-diagrams.py --handoff <path-to-HANDOFF.*.yaml> [--diagram <name>]
 
 Diagrams:
-    dependency   — inter-item dependency graph (inferred from extra[].note + blocked status)
-    sprint       — sprint/phase roadmap (explicit sprint field, or keyword inference)
-    coverage     — crate coverage heatmap (derived from files arrays)
-    blocked      — VZ / blocker cascade chain
+    dependency   — inter-item dependency graph (gated: items must have deps)
+    burn         — pie chart of item status distribution (gate: ≥3 items)
+    velocity     — session timeline from log entries (gate: ≥2 log entries)
+    hotspots     — bar chart of most-touched files (gate: ≥3 items with files, ≥3 distinct files)
+    blocked      — blocker cascade chain (gated: blocked items must exist)
 
 Output: Mermaid fenced blocks printed to stdout, separated by blank lines.
 """
@@ -86,56 +87,20 @@ def infer_dependencies(items: list[dict]) -> dict[str, list[str]]:
 
 
 # ---------------------------------------------------------------------------
-# Sprint inference
+# File path helpers
 # ---------------------------------------------------------------------------
 
-SPRINT_KEYWORDS: list[tuple[str, list[str]]] = [
-    ("Sprint 1 Core", ["exec into running", "named containers (#", "log capture", "auth", "handler coverage"]),
-    ("Sprint 2 Linux", ["linux", "tier 3", "adapter isolation", "lifecycle failure"]),
-    ("Sprint 3 Maestro", ["pty", "stdio piping", "container networking", "veth", "bridge", "maestro phase 3"]),
-    ("Sprint 4 OCI", ["shared oci", "oci image-pulling", "minibox-oci"]),
-    ("Sprint 5 VZ", ["vz", "vsock", "virtiofs", "virtualization.framework", "minibox-agent"]),
-    ("Infra", ["ci", "license", "serial", "dagu", "dashbox", "bench"]),
-]
-
-
-def infer_sprint(item: dict) -> str:
-    if "sprint" in item:
-        return item["sprint"]
-    text = (item.get("title", "") + " " + item.get("description", "")).lower()
-    for sprint_name, keywords in SPRINT_KEYWORDS:
-        if any(kw in text for kw in keywords):
-            return sprint_name
-    return "Backlog"
-
-
-# ---------------------------------------------------------------------------
-# Crate extraction
-# ---------------------------------------------------------------------------
-
-CRATE_FROM_PATH_RE = re.compile(r"crates/([^/]+)/")
-KNOWN_CRATES = [
-    "mbx", "minibox-core", "daemonbox", "miniboxd", "minibox-cli",
-    "minibox-client", "macbox", "winbox", "minibox-llm", "minibox-secrets",
-    "minibox-macros", "minibox-bench", "dashbox", "mbxctl", "xtask", "dockerbox",
-]
-
-
-def extract_crates(items: list[dict]) -> dict[str, list[str]]:
-    """Returns {crate: [item_id, ...]} from files arrays."""
-    crate_items: dict[str, list[str]] = {}
-    for item in items:
-        files = item.get("files", [])
-        if not isinstance(files, list):
-            continue
-        seen: set[str] = set()
-        for f in files:
-            m = CRATE_FROM_PATH_RE.search(f)
-            crate = m.group(1) if m else "root"
-            if crate not in seen:
-                seen.add(crate)
-                crate_items.setdefault(crate, []).append(item["id"])
-    return crate_items
+def _file_display_name(path: str, all_paths: list[str]) -> str:
+    """
+    Return the shortest suffix of path that is unique among all_paths.
+    Falls back to full path if no unique suffix ≤4 components exists.
+    """
+    parts = Path(path).parts
+    for n in range(1, len(parts) + 1):
+        candidate = "/".join(parts[-n:])
+        if sum(1 for p in all_paths if "/".join(Path(p).parts[-n:]) == candidate) == 1:
+            return candidate
+    return path
 
 
 # ---------------------------------------------------------------------------
@@ -202,81 +167,99 @@ def diagram_dependency(items: list[dict], deps: dict[str, list[str]]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Diagram 2: Sprint roadmap
+# Diagram 2: Work burn (pie)
 # ---------------------------------------------------------------------------
 
-def diagram_sprint(items: list[dict]) -> str:
-    sprint_map: dict[str, list[dict]] = {}
+def diagram_burn(items: list[dict]) -> str:
+    """Pie chart of item status counts. Gate: ≥3 items."""
+    if len(items) < 3:
+        return ""
+
+    counts: dict[str, int] = {}
     for item in items:
-        sprint = infer_sprint(item)
-        sprint_map.setdefault(sprint, []).append(item)
+        status = item.get("status", "open")
+        counts[status] = counts.get(status, 0) + 1
 
-    lines = ["```mermaid", "flowchart LR"]
-
-    sprint_order = [s for s, _ in SPRINT_KEYWORDS]
-    sprint_order.append("Backlog")
-
-    prev_sprint = None
-    for sprint in sprint_order:
-        if sprint not in sprint_map:
-            continue
-        sprint_items = sprint_map[sprint]
-        sg_id = sprint.replace(" ", "_")
-        lines.append(f"  subgraph {sg_id}[\"{sprint}\"]")
-        for item in sprint_items:
-            iid = item["id"]
-            label = abbrev(item.get("title", iid))
-            status = item.get("status", "open")
-            if status == "done":
-                lines.append(f"    {node_id(iid)}(\"{label}\"):::done")
-            elif status == "blocked":
-                lines.append(f"    {node_id(iid)}[\"{label}\"]:::blocked")
-            else:
-                lines.append(f"    {node_id(iid)}[\"{label}\"]")
-        lines.append("  end")
-        if prev_sprint:
-            prev_id = prev_sprint.replace(" ", "_")
-            lines.append(f"  {prev_id} --> {sg_id}")
-        prev_sprint = sprint
-
-    lines.append("")
-    lines.append("  classDef done fill:#27ae60,color:#fff")
-    lines.append("  classDef blocked fill:#e67e22,color:#fff")
+    lines = ["```mermaid", "pie title Work Distribution"]
+    for status in ("done", "open", "blocked", "parked"):
+        n = counts.get(status, 0)
+        if n:
+            lines.append(f'  "{status}" : {n}')
     lines.append("```")
     return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
-# Diagram 3: Crate coverage heatmap
+# Diagram 3: Session velocity (timeline)
 # ---------------------------------------------------------------------------
 
-def diagram_coverage(items: list[dict]) -> str:
-    crate_items = extract_crates(items)
-    if not crate_items:
+def diagram_velocity(log: list[dict]) -> str:
+    """Timeline of session log entries. Gate: ≥2 log entries."""
+    if len(log) < 2:
         return ""
 
-    # Count open vs done items per crate
-    id_to_item = {it["id"]: it for it in items}
+    # Group entries by date, sort chronologically
+    by_date: dict[str, list[str]] = {}
+    for entry in log:
+        date = str(entry.get("date", "unknown"))
+        summary = entry.get("summary", "").strip().splitlines()[0][:50]
+        by_date.setdefault(date, []).append(summary)
 
-    lines = ["```mermaid", "quadrantChart"]
-    lines.append("  title Crate Work Distribution")
-    lines.append("  x-axis Few Items --> Many Items")
-    lines.append("  y-axis All Done --> Active Work")
-
-    max_count = max(len(v) for v in crate_items.values()) or 1
-
-    for crate, item_ids in sorted(crate_items.items(), key=lambda x: -len(x[1])):
-        total = len(item_ids)
-        open_count = sum(
-            1 for iid in item_ids
-            if id_to_item.get(iid, {}).get("status", "open") not in ("done", "parked")
-        )
-        x = round(min(total / max_count, 1.0) * 0.8 + 0.1, 2)
-        y = round((open_count / total) * 0.8 + 0.1, 2) if total else 0.1
-        label = crate[:20]  # quadrantChart labels can be longer
-        lines.append(f"  {label}: [{x}, {y}]")
-
+    lines = ["```mermaid", "timeline"]
+    for date in sorted(by_date.keys()):
+        lines.append(f"  {date}")
+        for summary in by_date[date]:
+            lines.append(f"    : {summary}")
     lines.append("```")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Diagram 4: File hotspots (bar)
+# ---------------------------------------------------------------------------
+
+def diagram_file_hotspots(items: list[dict], top_n: int = 8) -> str:
+    """Bar chart of most-referenced files. Gate: ≥3 items with files, ≥3 distinct files."""
+    all_paths: list[str] = []
+    for item in items:
+        files = item.get("files") or []
+        if isinstance(files, list):
+            all_paths.extend(files)
+
+    items_with_files = sum(1 for it in items if it.get("files"))
+    if items_with_files < 3:
+        return ""
+
+    distinct = set(all_paths)
+    if len(distinct) < 3:
+        return ""
+
+    # Count item references per file (not raw path occurrences)
+    file_item_count: dict[str, int] = {}
+    for item in items:
+        files = item.get("files") or []
+        if not isinstance(files, list):
+            continue
+        for f in set(files):  # dedupe per item
+            file_item_count[f] = file_item_count.get(f, 0) + 1
+
+    top = sorted(file_item_count.items(), key=lambda x: -x[1])[:top_n]
+    paths = [p for p, _ in top]
+    counts = [c for _, c in top]
+
+    labels = [_file_display_name(p, list(file_item_count.keys())) for p in paths]
+    x_axis = ", ".join(f'"{l}"' for l in labels)
+    max_count = max(counts) if counts else 1
+
+    lines = [
+        "```mermaid",
+        "xychart-beta",
+        '  title "File Hotspots"',
+        f"  x-axis [{x_axis}]",
+        f"  y-axis \"Items\" 0 --> {max_count}",
+        f"  bar {counts}",
+        "```",
+    ]
     return "\n".join(lines)
 
 
@@ -361,7 +344,7 @@ def diagram_blocked_chain(items: list[dict], deps: dict[str, list[str]]) -> str:
 # Main
 # ---------------------------------------------------------------------------
 
-ALL_DIAGRAMS = ["dependency", "sprint", "coverage", "blocked"]
+ALL_DIAGRAMS = ["dependency", "burn", "velocity", "hotspots", "blocked"]
 
 
 def main() -> None:
@@ -387,6 +370,7 @@ def main() -> None:
         print("error: no items found in HANDOFF file", file=sys.stderr)
         sys.exit(1)
 
+    log = data.get("log", [])
     deps = infer_dependencies(items)
     diagrams_to_run = ALL_DIAGRAMS if args.diagram == "all" else [args.diagram]
 
@@ -394,10 +378,12 @@ def main() -> None:
     for name in diagrams_to_run:
         if name == "dependency":
             out = diagram_dependency(items, deps)
-        elif name == "sprint":
-            out = diagram_sprint(items)
-        elif name == "coverage":
-            out = diagram_coverage(items)
+        elif name == "burn":
+            out = diagram_burn(items)
+        elif name == "velocity":
+            out = diagram_velocity(log)
+        elif name == "hotspots":
+            out = diagram_file_hotspots(items)
         elif name == "blocked":
             out = diagram_blocked_chain(items, deps)
         else:
