@@ -209,4 +209,3 @@ and tables. No `.ctx/HANDOFF.state.yaml` will exist for legacy files.
 - **`references/diagram-patterns.md`** — abbreviation guide, subgraph patterns for ≥3 items per
   priority, complex multi-item examples, and the full common-mistakes reference with before/after
   fixes for all four Mermaid pitfalls (long labels, newlines, colon IDs, parentheses)
-test content
