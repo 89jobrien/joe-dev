@@ -92,9 +92,20 @@ items:
   title: Validate generate-diagrams.nu and sync-sqlite.sh in a fresh session
   description: |
     Both scripts were written and smoke-tested this session but the plugin was reinstalled
-    at session end. Next session: verify handover skill resolves and runs generate-diagrams.nu
-    from the plugin cache correctly, and that handoff/handon skills resolve sync-sqlite.sh.
-    Also confirm the nu script produces correct output on a HANDOFF with blocked/dep items.
+    at session end. Key risk: plugin.json has no manifest entries — Claude Code discovers
+    skills by scanning skills/ directly. Unknown whether the plugin cache copies
+    references/ and scripts/ subdirs or only SKILL.md files. If subdirs are omitted,
+    the glob in handover/handoff/handon SKILL.md will find nothing.
+
+    Validation checklist:
+    1. ls ~/.claude/plugins/cache/local/atelier/0.7.0/skills/handover/scripts/ — confirm
+       generate-diagrams.nu is present in the cache
+    2. ls ~/.claude/plugins/cache/local/atelier/0.7.0/skills/handoff/scripts/ — confirm
+       sync-sqlite.sh is present in the cache
+    3. Run /atelier:handover against a real HANDOFF — confirm nu script is invoked (not py)
+    4. Run /atelier:handoff — confirm sync-sqlite.sh is resolved and runs
+    5. If subdirs are missing from cache: either add explicit manifest entries to plugin.json
+       registering the scripts, or find another mechanism to ensure they are copied.
   files:
   - skills/handover/scripts/generate-diagrams.nu
   - skills/handoff/scripts/sync-sqlite.sh
