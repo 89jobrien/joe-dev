@@ -194,7 +194,7 @@ def diagram_burn(items: list[dict]) -> str:
 # ---------------------------------------------------------------------------
 
 def diagram_velocity(log: list[dict], items: list[dict] | None = None) -> str:
-    """Timeline of session stats per date. Gate: ≥2 log entries."""
+    """Bar chart of items completed per date. Gate: ≥2 log entries, ≥1 completed item."""
     if len(log) < 2:
         return ""
 
@@ -205,27 +205,30 @@ def diagram_velocity(log: list[dict], items: list[dict] | None = None) -> str:
         if date:
             completed_by_date[date] = completed_by_date.get(date, 0) + 1
 
-    # Group entries by date, count sessions and commits
-    by_date: dict[str, dict] = {}
-    for entry in log:
-        date = str(entry.get("date", "unknown"))
-        rec = by_date.setdefault(date, {"sessions": 0, "commits": 0})
-        rec["sessions"] += 1
-        commits = entry.get("commits") or []
-        real = [c for c in commits if c and not str(c).startswith("(")]
-        rec["commits"] += len(real)
+    if not completed_by_date:
+        return ""
 
-    lines = ["```mermaid", "timeline"]
-    for date in sorted(by_date.keys()):
-        rec = by_date[date]
-        lines.append(f"  {date}")
-        lines.append(f"    : {rec['sessions']} session{'s' if rec['sessions'] != 1 else ''}")
-        if rec["commits"]:
-            lines.append(f"    : {rec['commits']} commit{'s' if rec['commits'] != 1 else ''}")
-        done = completed_by_date.get(date, 0)
-        if done:
-            lines.append(f"    : {done} item{'s' if done != 1 else ''} done")
-    lines.append("```")
+    # Collect all dates from log, sorted
+    log_dates = sorted({str(e.get("date", "")) for e in log if e.get("date")})
+    # Only include dates that appear in the log
+    dates = [d for d in log_dates if d in completed_by_date or completed_by_date.get(d, 0) == 0]
+    # Use all log dates as x-axis, bar = items completed (0 if none that day)
+    counts = [completed_by_date.get(d, 0) for d in log_dates]
+
+    if max(counts) == 0:
+        return ""
+
+    max_count = max(counts)
+    labels = ", ".join(f'"{d}"' for d in log_dates)
+    lines = [
+        "```mermaid",
+        "xychart-beta",
+        '  title "Items Completed"',
+        f"  x-axis [{labels}]",
+        f'  y-axis "Items" 0 --> {max_count}',
+        f"  bar {counts}",
+        "```",
+    ]
     return "\n".join(lines)
 
 

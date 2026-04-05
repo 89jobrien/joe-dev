@@ -63,8 +63,8 @@ Emit sections in this order, omitting any section where data is absent:
 1. **Review on Wake** — unreviewed human-edit entries (see below)
 2. **State** — one-line build/test/notes summary
 3. **Items table** — markdown table: ID | Priority | Status | Title
-4. **Log** — last 5 log entries as a compact list
-5. **Diagrams** — all Mermaid diagrams (see below)
+4. **Diagrams** — all Mermaid diagrams (see below)
+5. **Log** — full history, oldest-first, as a compact dated list
 
 ### Review on Wake
 
@@ -107,7 +107,7 @@ The script emits up to five diagram types, each gated on having sufficient data:
 |------|------|------|
 | `dependency` | flowchart TD | items with inferred deps |
 | `burn` | pie | ≥3 items |
-| `velocity` | timeline | ≥2 log entries |
+| `velocity` | xychart-beta bar | ≥2 log entries, ≥1 completed item |
 | `hotspots` | xychart-beta bar | ≥3 items with files, ≥3 distinct files |
 | `blocked` | flowchart TD | blocked items exist |
 
@@ -136,15 +136,16 @@ pie title Work Distribution
 
 Skip slices with count 0.
 
-#### 2. Velocity (timeline) — gate: ≥2 log entries
+#### 2. Velocity (xychart-beta bar) — gate: ≥2 log entries, ≥1 completed item
 
-Group log entries by date, sorted chronologically. Truncate summaries to 50 chars.
+x-axis = dates from log (sorted), y-axis = items completed per date.
 
 ```
-timeline
-  2026-04-03 : Renamed plugin joe-dev to atelier
-  2026-04-05 : Wired generate-diagrams.py
-             : Created CLAUDE.md
+xychart-beta
+  title "Items Completed"
+  x-axis ["2026-04-03", "2026-04-05"]
+  y-axis "Items" 0 --> 3
+  bar [0, 3]
 ```
 
 #### 3. Hotspots (xychart-beta bar) — gate: ≥3 items with files, ≥3 distinct files
