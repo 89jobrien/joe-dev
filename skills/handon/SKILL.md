@@ -73,6 +73,12 @@ If no HANDOFF.yaml files are found:
 > "No HANDOFF.yaml found in active repos. Starting fresh session.
 > Run `handoff` at session end to capture state for next time."
 
+If this appears to be the first session (no HANDOFF files anywhere in active repos and no
+prior session log), also suggest onboarding:
+
+> "Looks like a first session. Run `/atelier:onboard` to walk through installation
+> verification and smoke tests."
+
 ## Automatic Invocation
 
 This skill is invoked automatically by the `sanctum` SessionStart hook after op-resolver

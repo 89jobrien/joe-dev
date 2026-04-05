@@ -16,6 +16,7 @@ claude --plugin-dir ~/.claude/plugins/sanctum
 
 | Skill | Trigger Phrases |
 |-------|----------------|
+| onboard | "onboard me", "walk me through setup", `/atelier:onboard` |
 | cargo-gate | "gatecargo", "run gates", "validate rust" |
 | sentinel-autofixer | "autofix", "apply review fixes", "fix sentinel suggestions" |
 | hook-diagnostics | "failhook", "show hook status", "what hooks ran" |
