@@ -193,23 +193,38 @@ def diagram_burn(items: list[dict]) -> str:
 # Diagram 3: Session velocity (timeline)
 # ---------------------------------------------------------------------------
 
-def diagram_velocity(log: list[dict]) -> str:
-    """Timeline of session log entries. Gate: ≥2 log entries."""
+def diagram_velocity(log: list[dict], items: list[dict] | None = None) -> str:
+    """Timeline of session stats per date. Gate: ≥2 log entries."""
     if len(log) < 2:
         return ""
 
-    # Group entries by date, sort chronologically
-    by_date: dict[str, list[str]] = {}
+    # Build completed-per-date index from items
+    completed_by_date: dict[str, int] = {}
+    for item in (items or []):
+        date = str(item.get("completed", ""))
+        if date:
+            completed_by_date[date] = completed_by_date.get(date, 0) + 1
+
+    # Group entries by date, count sessions and commits
+    by_date: dict[str, dict] = {}
     for entry in log:
         date = str(entry.get("date", "unknown"))
-        summary = entry.get("summary", "").strip().splitlines()[0][:50]
-        by_date.setdefault(date, []).append(summary)
+        rec = by_date.setdefault(date, {"sessions": 0, "commits": 0})
+        rec["sessions"] += 1
+        commits = entry.get("commits") or []
+        real = [c for c in commits if c and not str(c).startswith("(")]
+        rec["commits"] += len(real)
 
     lines = ["```mermaid", "timeline"]
     for date in sorted(by_date.keys()):
+        rec = by_date[date]
         lines.append(f"  {date}")
-        for summary in by_date[date]:
-            lines.append(f"    : {summary}")
+        lines.append(f"    : {rec['sessions']} session{'s' if rec['sessions'] != 1 else ''}")
+        if rec["commits"]:
+            lines.append(f"    : {rec['commits']} commit{'s' if rec['commits'] != 1 else ''}")
+        done = completed_by_date.get(date, 0)
+        if done:
+            lines.append(f"    : {done} item{'s' if done != 1 else ''} done")
     lines.append("```")
     return "\n".join(lines)
 
@@ -381,7 +396,7 @@ def main() -> None:
         elif name == "burn":
             out = diagram_burn(items)
         elif name == "velocity":
-            out = diagram_velocity(log)
+            out = diagram_velocity(log, items)
         elif name == "hotspots":
             out = diagram_file_hotspots(items)
         elif name == "blocked":
