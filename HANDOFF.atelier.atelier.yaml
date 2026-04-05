@@ -1,25 +1,29 @@
 project: atelier
 id: atelier
-updated: 2026-04-03
+updated: 2026-04-05
 items:
-  - id: atelier-1
-    doob_uuid: 4c0dfa68-fb3a-4dfc-bfe5-fe5e3924e98f
-    name: install-and-test-plugins
-    priority: P1
-    status: open
-    title: Install and test both plugins in a live Claude session
-    description: |
-      Install atelier and sanctum via `claude --plugin-dir` and verify skills trigger
-      correctly, agents appear, and the SessionStart hook fires on session start.
-    files: []
-    extra: []
+- id: atelier-1
+  doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
+  name: install-and-test-plugins
+  priority: P1
+  status: open
+  title: Install and test both plugins in a live Claude session
+  description: |
+    Install atelier and sanctum via `claude --plugin-dir` and verify skills trigger
+    correctly, agents appear, and the SessionStart hook fires on session start.
+  files: []
+  extra: []
 log:
-  - date: 2026-04-03
-    summary: Built full plugin from scratch — 8 skills, 5 agents, published to GitHub
-    commits:
-      - 6266292
-      - 6454b01
-      - ab19dbb
-      - 765fe7e
-      - e68d373
-      - 9eab53c
+- date: 2026-04-05
+  summary: Renamed plugin joe-dev → atelier — dirs, plugin.json, README, skills, HANDOFFs
+  commits:
+  - f326409
+- date: 2026-04-03
+  summary: Built full plugin from scratch — 8 skills, 5 agents, published to GitHub
+  commits:
+  - 6266292
+  - 6454b01
+  - ab19dbb
+  - 765fe7e
+  - e68d373
+  - 9eab53c
