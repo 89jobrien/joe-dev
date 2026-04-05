@@ -1,6 +1,6 @@
 project: atelier
 id: atelier
-updated: 2026-04-05
+updated: 2026-04-08
 items:
 - id: atelier-1
   doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
@@ -13,7 +13,30 @@ items:
     correctly, agents appear, and the SessionStart hook fires on session start.
   files: []
   extra: []
+- id: atelier-2
+  name: handover-diagram-script
+  priority: P1
+  status: open
+  title: Wire generate-diagrams.py into handover skill output
+  description: |
+    scripts/generate-diagrams.py is complete and working (uv run, pyyaml, 4 diagram types:
+    dependency, sprint, coverage, blocked). The handover skill SKILL.md needs to be updated
+    to call the script instead of generating diagrams inline via LLM. Skill should run
+    `./scripts/generate-diagrams.py --handoff <path>` and embed stdout into HANDOVER.md.
+  files:
+  - skills/handover/SKILL.md
+  - scripts/generate-diagrams.py
+  extra: []
 log:
+- date: 2026-04-08
+  summary: |
+    Added scripts/generate-diagrams.py (uv run, pyyaml) — 4 Mermaid diagram types from
+    HANDOFF yaml: dependency graph, sprint roadmap, crate coverage heatmap, blocked chain.
+    Logic: deps inferred from extra[].note, sprint from keyword heuristics, crates from
+    files paths. All 4 diagrams validated against minibox HANDOFF. atelier-2 opened to
+    wire into handover skill.
+  commits:
+  - (pending commit)
 - date: 2026-04-05
   summary: Renamed plugin joe-dev → atelier — dirs, plugin.json, README, skills, HANDOFFs
   commits:
