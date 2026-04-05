@@ -1,7 +1,7 @@
 # atelier
 
 Personal dev workflow plugin — Rust gates, code review, CI, git safety,
-multi-repo pulse. Version-bumping is automatic.
+multi-repo pulse.
 
 ## Installation
 
