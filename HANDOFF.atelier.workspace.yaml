@@ -6,13 +6,14 @@ items:
 - id: atelier-1
   name: install-and-test-plugins
   priority: P1
-  status: open
+  status: done
   title: Install and test both plugins in a live Claude session
   description: |
     Install atelier and sanctum via `claude --plugin-dir` and verify skills trigger
     correctly, agents appear, and the SessionStart hook fires on session start.
   files: []
   extra: []
+  completed: 2026-04-05
 - id: atelier-2
   name: handover-diagram-script
   priority: P1
