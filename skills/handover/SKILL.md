@@ -85,21 +85,26 @@ Keep prose minimal. No headers longer than 3 words. No HTML. No emoji.
 
 ## Mermaid Diagrams
 
-Locate and run `generate-diagrams.py` by resolving the script path at runtime:
+Prefer `generate-diagrams.nu` (faster, no deps); fall back to `generate-diagrams.py` if nu
+is not available. Resolve the highest installed version at runtime:
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handover/scripts/generate-diagrams.py \
-  2>/dev/null | sort -V | tail -1)
-uv run "$SCRIPT" --handoff <path-to-HANDOFF.yaml>
-```
+CACHE=$HOME/.claude/plugins/cache/local/atelier
+NU_SCRIPT=$(ls $CACHE/*/skills/handover/scripts/generate-diagrams.nu 2>/dev/null | sort -V | tail -1)
+PY_SCRIPT=$(ls $CACHE/*/skills/handover/scripts/generate-diagrams.py 2>/dev/null | sort -V | tail -1)
 
-This picks the highest installed version automatically. If no match is found, fall back to inline generation.
+if command -v nu >/dev/null 2>&1 && [[ -n "$NU_SCRIPT" ]]; then
+    nu "$NU_SCRIPT" --handoff <path-to-HANDOFF.yaml>
+elif [[ -n "$PY_SCRIPT" ]]; then
+    uv run "$PY_SCRIPT" --handoff <path-to-HANDOFF.yaml>
+fi
+```
 
 Embed the full stdout output verbatim into the Diagrams section of `.ctx/HANDOVER.md`.
 
-If the script fails (non-zero exit or not found), fall back to generating diagrams inline
-using the rules below. Record the fallback in a comment at the top of the Diagrams section:
-`<!-- generate-diagrams.py unavailable — diagrams generated inline -->`.
+If both scripts fail or are not found, fall back to generating diagrams inline using the rules
+below. Record the fallback in a comment at the top of the Diagrams section:
+`<!-- generate-diagrams unavailable — diagrams generated inline -->`.
 
 The script emits up to five diagram types, each gated on having sufficient data:
 

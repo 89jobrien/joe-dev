@@ -57,16 +57,16 @@ Before parsing the local file, check the local SQLite database for status overri
 outside this session (e.g. by another tool or a manual update):
 
 ```bash
-DB="$HOME/.local/share/atelier/handoff.db"
-sqlite3 "$DB" "SELECT id, status, completed FROM items WHERE project = '<project>';" 2>/dev/null
+SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/sync-sqlite.sh \
+  2>/dev/null | sort -V | tail -1)
+bash "$SCRIPT" --project <project> --query 2>/dev/null
 ```
 
 For each row returned, if the SQLite `status` differs from the YAML `status`, prefer SQLite and
 update the in-memory copy before triaging. Do not write back to HANDOFF.yaml here — that happens
 in step 9.
 
-If `sqlite3` is not on PATH or the database does not exist, skip and continue with the local
-file as-is.
+If the script is not found or `sqlite3` is not on PATH, skip and continue with the local file.
 
 ### 4. Review on wake
 
@@ -142,7 +142,7 @@ P2:
 Then update `HANDOFF.yaml`:
 - Mark done items `status: done`, add `completed: <today>`
 - Add `log` entry for this session (one-liner, prepend to list)
-- Upsert all items to SQLite (see handoff skill step 6 for schema)
+- Upsert all items to SQLite via `sync-sqlite.sh` (see handoff skill step 6)
 - Commit: `git add HANDOFF.yaml && git commit -m "docs: update handoff"`
 
 ## Edge Cases

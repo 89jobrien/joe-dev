@@ -10,44 +10,16 @@ description: This skill should be used when the user asks to "end session", "cap
 Capture branch/commit/PR state across all active repos at session end. Write to both
 memory files and the Obsidian daily note.
 
-## Active Repos
-
-Default active repos to check:
-
-```
-~/dev/minibox
-~/dev/maestro
-~/dev/devloop
-~/dev/doob
-~/dev/devkit
-~/dev/magi
-~/dev/mcpipe
-~/dev/braid
-```
-
-Add or remove repos based on what was active in the current session.
+See `references/active-repos.md` for the default repo list, output paths, and session diff
+format. Edit that file to add or remove repos without touching this skill.
 
 ## State Capture Per Repo
 
-For each repo, capture:
-
 ```bash
-cd <repo>
-git branch --show-current          # current branch
-git log --oneline -5               # last 5 commits
-git status --short                 # uncommitted changes
-gh pr list --state open --limit 3  # open PRs (if gh available)
-```
-
-## Session Diff
-
-Compare against session-start state (if known) to produce a diff:
-
-```
-REPO        BRANCH          COMMITS THIS SESSION   OPEN PRS
-minibox     feat/gc-images  3 new commits          1 open
-devloop     main            0                      0
-doob        fix/sync        1 new commit           0
+git branch --show-current
+git log --oneline -5
+git status --short
+gh pr list --state open --limit 3
 ```
 
 ## Writing to Memory
@@ -81,13 +53,11 @@ type: project
 
 ## Writing to Obsidian
 
-Append a section to today's daily note:
+Append under `## Session Pulse` in today's daily note:
 
 ```
 $HOME/Documents/Obsidian Vault/Daily Notes/YYYY-MM-DD.md
 ```
-
-Append under a `## Session Pulse` heading:
 
 ```markdown
 ## Session Pulse
@@ -102,14 +72,14 @@ If the daily note doesn't exist, create it with the pulse section.
 
 ## Using the herald Agent
 
-For a richer narrative synthesis (vs. raw state capture), invoke the `herald` agent:
+For narrative synthesis, invoke the `herald` agent after pulse:
 
 > "Synthesize today's session into the Obsidian daily note"
 
-`herald` produces prose summaries; `project-pulse` produces structured state tables.
-Use both for complete session-end coverage: pulse first (structured), herald second (narrative).
+`herald` produces prose; `project-pulse` produces structured state tables. Run pulse first,
+herald second.
 
 ## Pairing with handoff
 
 After `project-pulse`, run `handoff` to write `HANDOFF.yaml` with actionable next steps.
-The two skills complement each other: pulse captures what happened, handoff captures what's next.
+Pulse captures what happened; handoff captures what's next.

@@ -42,26 +42,84 @@ items:
   - CLAUDE.md
   extra: []
   completed: 2026-04-05
+- id: atelier-4
+  name: rtk-hook-v3-update
+  priority: P1
+  status: done
+  title: Update rtk-rewrite.nu to v3 exit code protocol
+  description: |
+    rtk init -g updated rtk-rewrite.sh to v3 (exit codes 0/1/2/3 for allow/passthrough/
+    deny/ask). Updated rtk-rewrite.nu in ~/.claude/hooks/nu/pre/ to match — added match
+    on exit code, emit without permissionDecision on exit 3 (ask), pass-through on 2 (deny).
+  files:
+  - ~/.claude/hooks/nu/pre/rtk-rewrite.nu
+  extra: []
+  completed: 2026-04-05
+- id: atelier-5
+  name: skills-references-and-scripts
+  priority: P1
+  status: done
+  title: Add references/ and scripts/ dirs to all skills
+  description: |
+    Added references/ (static knowledge) and scripts/ (sh/nu only) to skills that need them.
+    Reference files: ci-assist/target-triples.md, handoff/schema.md,
+    hook-diagnostics/hooks-registry.md, project-pulse/active-repos.md.
+    Scripts: handoff/scripts/sync-sqlite.sh (yq+sqlite3 upsert/query),
+    handover/scripts/generate-diagrams.nu (nu port of py diagram generator).
+    handover SKILL.md updated to prefer nu → py → inline fallback.
+    handoff/handon SKILL.md updated to delegate SQLite ops to sync-sqlite.sh.
+    Policy: scripts/ is sh/nu only; generate-diagrams.py is the sole grandfathered exception.
+  files:
+  - skills/ci-assist/references/target-triples.md
+  - skills/ci-assist/SKILL.md
+  - skills/handoff/references/schema.md
+  - skills/handoff/scripts/sync-sqlite.sh
+  - skills/handoff/SKILL.md
+  - skills/handon/SKILL.md
+  - skills/handover/references/diagram-patterns.md
+  - skills/handover/scripts/generate-diagrams.nu
+  - skills/handover/SKILL.md
+  - skills/hook-diagnostics/references/hooks-registry.md
+  - skills/hook-diagnostics/SKILL.md
+  - skills/project-pulse/references/active-repos.md
+  - skills/project-pulse/SKILL.md
+  extra: []
+  completed: 2026-04-05
+- id: atelier-6
+  name: validate-new-scripts-next-session
+  priority: P1
+  status: open
+  title: Validate generate-diagrams.nu and sync-sqlite.sh in a fresh session
+  description: |
+    Both scripts were written and smoke-tested this session but the plugin was reinstalled
+    at session end. Next session: verify handover skill resolves and runs generate-diagrams.nu
+    from the plugin cache correctly, and that handoff/handon skills resolve sync-sqlite.sh.
+    Also confirm the nu script produces correct output on a HANDOFF with blocked/dep items.
+  files:
+  - skills/handover/scripts/generate-diagrams.nu
+  - skills/handoff/scripts/sync-sqlite.sh
 
 log:
+- date: 2026-04-05
+  summary: Added references/ and scripts/ to all skills; generate-diagrams.nu; sync-sqlite.sh; rtk hook v3
+  commits:
+  - (pending)
 - date: 2026-04-05
   summary: Created CLAUDE.md — architecture overview, skills/agents inventory, handoff schema, key design rules
   commits:
   - (pending)
 - date: 2026-04-05
-  summary: |
+  summary: >
     Wired generate-diagrams.py into handover skill — SKILL.md now calls the script via
     `uv run scripts/generate-diagrams.py --handoff <path>` and embeds stdout into HANDOVER.md.
     Inline diagram generation retained as fallback. atelier-2 done.
   commits:
   - (pending)
 - date: 2026-04-08
-  summary: |
+  summary: >
     Added scripts/generate-diagrams.py (uv run, pyyaml) — 4 Mermaid diagram types from
     HANDOFF yaml: dependency graph, sprint roadmap, crate coverage heatmap, blocked chain.
-    Logic: deps inferred from extra[].note, sprint from keyword heuristics, crates from
-    files paths. All 4 diagrams validated against minibox HANDOFF. atelier-2 opened to
-    wire into handover skill.
+    All 4 diagrams validated against minibox HANDOFF.
   commits:
   - (pending commit)
 - date: 2026-04-05
