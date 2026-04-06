@@ -1,19 +1,2 @@
 #!/usr/bin/env bash
-# Reinstall the atelier plugin when plugin sources change so the cache stays fresh.
-
-PLUGIN_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null \
-  | grep -E '^(\.claude-plugin/|skills/|agents/|hooks/)' || true)
-
-if [ -z "$PLUGIN_FILES" ]; then
-  exit 0
-fi
-
-if ! command -v claude >/dev/null 2>&1; then
-  echo "[atelier] claude not on PATH — skipping plugin reinstall"
-  exit 0
-fi
-
-echo "[atelier] plugin sources changed — reinstalling..."
-claude plugin uninstall atelier --force 2>/dev/null || true
-claude plugin install atelier@local
-echo "[atelier] plugin reinstalled (restart Claude Code to apply)"
+# Reinstall is handled by post-push so the installed version matches the pushed hash.
