@@ -114,32 +114,27 @@ items:
 log:
 - date: 2026-04-05
   summary: >
-    Session-start validation — generate-diagrams.nu and sync-sqlite.sh confirmed in plugin cache
-    (0.7.0); nu script runs clean against real HANDOFF; SQLite query returns all 6 items; atelier-6 done.
+    E2E session — validated version bump flow (0.7.0→0.8.3); fixed pre-commit hook to include
+    README.md in bump trigger; removed stale .disabled hook entries from settings.json;
+    confirmed scripts land in new cache dirs on every bump.
   commits:
-  - (pending)
+  - 21fe73f
+  - 014a08d
+  - 871d747
+  - 85091b7
+  - bfd3a3d
+  - b269c9f
+- date: 2026-04-05
+  summary: >
+    Session-start validation — generate-diagrams.nu and sync-sqlite.sh confirmed in plugin
+    cache (0.8.0); nu script runs clean against real HANDOFF; SQLite query returns all 6
+    items; atelier-6 done.
+  commits:
+  - 21fe73f
 - date: 2026-04-05
   summary: Added references/ and scripts/ to all skills; generate-diagrams.nu; sync-sqlite.sh; rtk hook v3
   commits:
   - (pending)
-- date: 2026-04-05
-  summary: Created CLAUDE.md — architecture overview, skills/agents inventory, handoff schema, key design rules
-  commits:
-  - (pending)
-- date: 2026-04-05
-  summary: >
-    Wired generate-diagrams.py into handover skill — SKILL.md now calls the script via
-    `uv run scripts/generate-diagrams.py --handoff <path>` and embeds stdout into HANDOVER.md.
-    Inline diagram generation retained as fallback. atelier-2 done.
-  commits:
-  - (pending)
-- date: 2026-04-08
-  summary: >
-    Added scripts/generate-diagrams.py (uv run, pyyaml) — 4 Mermaid diagram types from
-    HANDOFF yaml: dependency graph, sprint roadmap, crate coverage heatmap, blocked chain.
-    All 4 diagrams validated against minibox HANDOFF.
-  commits:
-  - (pending commit)
 - date: 2026-04-05
   summary: Renamed plugin joe-dev → atelier — dirs, plugin.json, README, skills, HANDOFFs
   commits:
