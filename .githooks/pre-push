@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 # Update plugin.json version to current commit hash before push.
-# Commits the manifest update so the version reflects the tip being pushed.
 
 MANIFEST=".claude-plugin/plugin.json"
 [ -f "$MANIFEST" ] || exit 0
