@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Update plugin.json version to current commit hash before push.
+# Commits the manifest update so the version reflects the tip being pushed.
+
+MANIFEST=".claude-plugin/plugin.json"
+[ -f "$MANIFEST" ] || exit 0
+
+HASH=$(git rev-parse --short HEAD)
+current=$(grep '"version"' "$MANIFEST" | head -1 | sed 's/.*"version": *"\([^"]*\)".*/\1/')
+
+if [ "$current" = "$HASH" ]; then
+  exit 0
+fi
+
+sed -i '' "s/\"version\": \"$current\"/\"version\": \"$HASH\"/" "$MANIFEST"
+git add "$MANIFEST"
+git commit -m "chore: set plugin version to $HASH"
+echo "[atelier] version set to $HASH"

@@ -9,7 +9,7 @@ init:
 
     # 1. Wire local hooks
     git config core.hooksPath .githooks
-    chmod +x .githooks/pre-commit .githooks/post-commit
+    chmod +x .githooks/pre-commit .githooks/post-commit .githooks/pre-push
     echo "    hooks: .githooks wired"
 
     # 2. Verify claude is available
