@@ -92,31 +92,36 @@ items:
   completed: 2026-04-05
   title: Validate generate-diagrams.nu and sync-sqlite.sh in a fresh session
   description: |
-    Both scripts were written and smoke-tested this session but the plugin was reinstalled
-    at session end. Key risk: plugin.json has no manifest entries — Claude Code discovers
-    skills by scanning skills/ directly. Unknown whether the plugin cache copies
-    references/ and scripts/ subdirs or only SKILL.md files. If subdirs are omitted,
-    the glob in handover/handoff/handon SKILL.md will find nothing.
-
-    Validation checklist:
-    1. ls ~/.claude/plugins/cache/local/atelier/0.7.0/skills/handover/scripts/ — confirm
-       generate-diagrams.nu is present in the cache
-    2. ls ~/.claude/plugins/cache/local/atelier/0.7.0/skills/handoff/scripts/ — confirm
-       sync-sqlite.sh is present in the cache
-    3. Run /atelier:handover against a real HANDOFF — confirm nu script is invoked (not py)
-    4. Run /atelier:handoff — confirm sync-sqlite.sh is resolved and runs
-    5. If subdirs are missing from cache: either add explicit manifest entries to plugin.json
-       registering the scripts, or find another mechanism to ensure they are copied.
+    Validated: scripts present in cache 0.8.0+, nu script runs clean, SQLite syncs all items.
   files:
   - skills/handover/scripts/generate-diagrams.nu
   - skills/handoff/scripts/sync-sqlite.sh
+- id: atelier-7
+  name: fix-course-correct-exit-code
+  priority: P1
+  status: open
+  title: Fix pre-tool-course-correct.nu deny exit code protocol
+  description: |
+    Root cause of recurring "PreToolUse:Bash hook error": deny() was calling exit 2 and
+    writing JSON to stderr. Claude Code treats any non-zero hook exit as a hook error.
+    Fix applied this session: deny() now writes JSON to stdout and exits 0.
+    Still needs validation in a fresh session — confirm no more hook errors on Bash calls,
+    and that deny decisions (e.g. grep without pipe) still block correctly.
+  files:
+  - /Users/joe/.claude/hooks/nu/pre/pre-tool-course-correct.nu
 
 log:
 - date: 2026-04-05
   summary: >
+    Found root cause of hook errors: pre-tool-course-correct.nu deny() was exiting 2 +
+    writing to stderr. Fixed to exit 0 + stdout JSON. Also patched 13 hooks with unguarded
+    stdin reads. Session interrupted before full validation.
+  commits:
+  - (pending)
+- date: 2026-04-05
+  summary: >
     E2E session — validated version bump flow (0.7.0→0.8.3); fixed pre-commit hook to include
-    README.md in bump trigger; removed stale .disabled hook entries from settings.json;
-    confirmed scripts land in new cache dirs on every bump.
+    README.md in bump trigger; removed stale .disabled hook entries from settings.json.
   commits:
   - 21fe73f
   - 014a08d
@@ -124,17 +129,6 @@ log:
   - 85091b7
   - bfd3a3d
   - b269c9f
-- date: 2026-04-05
-  summary: >
-    Session-start validation — generate-diagrams.nu and sync-sqlite.sh confirmed in plugin
-    cache (0.8.0); nu script runs clean against real HANDOFF; SQLite query returns all 6
-    items; atelier-6 done.
-  commits:
-  - 21fe73f
-- date: 2026-04-05
-  summary: Added references/ and scripts/ to all skills; generate-diagrams.nu; sync-sqlite.sh; rtk hook v3
-  commits:
-  - (pending)
 - date: 2026-04-05
   summary: Renamed plugin joe-dev → atelier — dirs, plugin.json, README, skills, HANDOFFs
   commits:
@@ -145,6 +139,3 @@ log:
   - 6266292
   - 6454b01
   - ab19dbb
-  - 765fe7e
-  - e68d373
-  - 9eab53c
