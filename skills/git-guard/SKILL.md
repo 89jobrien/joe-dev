@@ -88,3 +88,9 @@ Always run `cargo-gate` before `git-guard` on Rust projects:
 
 1. `cargo-gate` — validates the build is clean
 2. `git-guard` — confirms strategy and signs the commit
+
+## Additional Resources
+
+- **`references/merge-strategies.md`** — decision matrix, detached HEAD detection, dirty
+  working tree handling, 1Password failure recovery, fork-point rebase, squash workflow,
+  push patterns, branch state summary template

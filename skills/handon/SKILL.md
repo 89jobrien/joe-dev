@@ -165,3 +165,9 @@ for structured triage."
 
 **Blocked item:** Do not attempt. Report the blocker to user verbatim from the `description`
 field.
+
+## Additional Resources
+
+- **`references/triage-patterns.md`** — priority classification guide, P0 validation
+  sequence, P1 autonomous execution rules, P2 subagent dispatch template, multi-repo sweep,
+  human-edit review patterns, SQLite conflict resolution, blocked item handling

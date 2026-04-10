@@ -64,3 +64,8 @@ To generate a fresh sentinel report before auto-fixing, invoke the `sentinel` ag
 > "Review [file or diff] for issues"
 
 The sentinel agent will produce a structured report that this skill can consume.
+
+## Additional Resources
+
+- **`references/report-format.md`** — sentinel report structure, severity taxonomy,
+  dry-run diff format, selective application workflow, post-apply verification

@@ -65,3 +65,8 @@ It does NOT run `cargo test` by default. Add test stage separately if needed.
 
 Invoke before every commit on Rust projects. Pairs with `git-guard` — run cargo-gate
 first, then git-guard to confirm merge strategy before committing.
+
+## Additional Resources
+
+- **`references/xtask-patterns.md`** — xtask detection, workspace vs crate gates, fallback
+  stage sequence, clippy fix workflow, common failure patterns, minibox xtask profile
