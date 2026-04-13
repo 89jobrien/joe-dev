@@ -6,7 +6,8 @@
   "plugins": [
     {
       "name": "atelier",
-      "source": "./atelier"
+      "source": ".",
+      "description": "Personal dev workflow plugin — Rust gates, code review, CI, git safety, multi-repo pulse"
     }
   ]
 }
