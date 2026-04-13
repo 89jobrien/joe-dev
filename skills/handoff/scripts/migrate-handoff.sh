@@ -1,0 +1,35 @@
+#!/bin/sh
+# migrate-handoff.sh — Move a root-level HANDOFF file into .ctx/.
+#
+# Usage:
+#   migrate-handoff.sh <repo-root> <old-path>
+#
+# Prints new path to stdout on success.
+# Does NOT commit — caller is responsible.
+#
+# Exit codes:
+#   0  success
+#   1  error
+
+set -eu
+
+if [ $# -ne 2 ]; then
+    echo "usage: migrate-handoff.sh <repo-root> <old-path>" >&2
+    exit 1
+fi
+
+REPO_ROOT="$1"
+OLD_PATH="$2"
+
+if [ ! -f "$OLD_PATH" ]; then
+    echo "error: file not found: $OLD_PATH" >&2
+    exit 1
+fi
+
+FILENAME=$(basename "$OLD_PATH")
+NEW_PATH="${REPO_ROOT}/.ctx/${FILENAME}"
+
+mkdir -p "${REPO_ROOT}/.ctx"
+git -C "$REPO_ROOT" mv "$OLD_PATH" "$NEW_PATH"
+
+echo "$NEW_PATH"

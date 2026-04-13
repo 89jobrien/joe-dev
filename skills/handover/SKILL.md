@@ -28,7 +28,7 @@ Resolve the target file in this order:
    ```bash
    handoff-detect
    ```
-   If `handoff-detect` is not on PATH, fall back to globbing the repo root for `HANDOFF.*.yaml`.
+   If `handoff-detect` is not on PATH, fall back to globbing `.ctx/` for `HANDOFF.*.yaml`.
    If exit code 2 (no file exists), report: `no HANDOFF file found in this repo` and stop.
 
 Never read arbitrary files. Never accept paths that don't match the naming pattern.
@@ -186,7 +186,7 @@ it exists. This file holds build/tests/branch/notes — it is not in HANDOFF.yam
 
 ```
 <repo-root>/.ctx/HANDOFF.state.yaml   # project snapshot — may not exist
-<repo-root>/HANDOFF.*.yaml            # tasks/items/log
+<repo-root>/.ctx/HANDOFF.*.yaml       # tasks/items/log
 ```
 
 If `.ctx/HANDOFF.state.yaml` is absent, omit the State section from output rather than guessing.

@@ -22,7 +22,8 @@ next; `handon` is how you get there.
 Glob from cwd downward for `HANDOFF.*.yaml` and `HANDOFF.md`:
 
 ```bash
-find . -maxdepth 4 -name "HANDOFF.*.yaml" -o -name "HANDOFF.md" 2>/dev/null | sort
+find . -maxdepth 5 \( -path "*/.ctx/HANDOFF.*.yaml" -o -name "HANDOFF.md" \) 2>/dev/null \
+  | grep -v -E "(target/|\.git/|node_modules/)" | sort
 ```
 
 For each file found:
@@ -31,7 +32,7 @@ For each file found:
 - Note the repo root (nearest ancestor containing `.git`)
 - Read `.ctx/HANDOFF.state.yaml` alongside if present — extract `branch`, `build`, `tests`
 
-Skip files under `.git/`, `target/`, `node_modules/`, `.ctx/`.
+Skip files under `.git/`, `target/`, `node_modules/`.
 
 ### 2. Sweep for inline TODO/FIXME markers
 

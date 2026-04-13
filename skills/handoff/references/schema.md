@@ -88,17 +88,25 @@ Extend freely with project-specific facts (e.g. `rust_edition`, `open_prs`, `las
 
 ## File Layout
 
-| File                            | Location  | Committed | Purpose                 |
-| ------------------------------- | --------- | --------- | ----------------------- |
-| `HANDOFF.<project>.<base>.yaml` | repo root | yes       | Tasks, items, log       |
-| `.ctx/HANDOFF.state.yaml`       | `.ctx/`   | no        | Project snapshot        |
-| `.ctx/HANDOFF.md`               | `.ctx/`   | no        | Generated reference doc |
+| File                                   | Location | Committed | Purpose                 |
+| -------------------------------------- | -------- | --------- | ----------------------- |
+| `.ctx/HANDOFF.<project>.<base>.yaml`   | `.ctx/`  | yes       | Tasks, items, log       |
+| `.ctx/HANDOFF.state.yaml`              | `.ctx/`  | no        | Project snapshot        |
+| `.ctx/HANDOFF.md`                      | `.ctx/`  | no        | Generated reference doc |
 
-`.ctx/` must be in `.gitignore`. Never commit anything under it.
+`.gitignore` must contain:
+```
+.ctx/*
+!.ctx/HANDOFF.*.yaml
+```
+
+This ignores all `.ctx/` contents while un-ignoring committed HANDOFF files.
 
 ## Naming Convention
 
-`HANDOFF.<project>.<cwd-basename>.yaml`
+- **Root handoff** (cwd == repo root): `.ctx/HANDOFF.<project>.workspace.yaml`
+- **Nested handoff** (cwd != repo root): `.ctx/HANDOFF.<project>.<cwd-basename>.yaml`
 
+Where:
 - `project` = name from Cargo.toml / go.mod / pyproject.toml, fallback to repo root dir name
 - `cwd-basename` = `basename $(pwd)` at time of invocation

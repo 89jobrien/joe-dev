@@ -35,7 +35,7 @@ handoff-detect          # returns path if exists, expected path + exit 2 if not
 - Exit 2 → file missing, expected path printed — offer to create via `/atelier:handoff`
 - Exit 1 → not in a git repo — report and stop
 
-If `handoff-detect` is not on PATH, fall back to globbing the repo root for `HANDOFF.*.yaml`.
+If `handoff-detect` is not on PATH, fall back to globbing `.ctx/` for `HANDOFF.*.yaml`.
 
 If invoked from a workspace root (e.g. `~/dev`) with no `.git`, sweep subdirs for
 `HANDOFF.*.*.yaml` files instead.
@@ -65,9 +65,9 @@ Before parsing the local file, check the local SQLite database for status overri
 outside this session (e.g. by another tool or a manual update):
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/sync-sqlite.sh \
+SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/handoff-db.sh \
   2>/dev/null | sort -V | tail -1)
-bash "$SCRIPT" --project <project> --query 2>/dev/null
+bash "$SCRIPT" query --project <project> 2>/dev/null
 ```
 
 For each row returned, if the SQLite `status` differs from the YAML `status`, prefer SQLite and
@@ -155,8 +155,8 @@ Then update `HANDOFF.yaml`:
 
 - Mark done items `status: done`, add `completed: <today>`
 - Add `log` entry for this session (one-liner, prepend to list)
-- Upsert all items to SQLite via `sync-sqlite.sh` (see handoff skill step 6)
-- Commit: `git add HANDOFF.yaml && git commit -m "docs: update handoff"`
+- Upsert all items to SQLite via `handoff-db.sh upsert` (see handoff skill step 6)
+- Commit: `git add .ctx/HANDOFF.<project>.*.yaml && git commit -m "docs: update handoff"`
 
 ## Edge Cases
 
