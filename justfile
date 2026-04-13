@@ -19,9 +19,11 @@ init:
         exit 1
     fi
 
-    # 3. Register bazaar marketplace
-    claude plugin marketplace add 89jobrien/bazaar 2>/dev/null || \
-        claude plugin marketplace update bazaar 2>/dev/null || true
+    # 3. Register bazaar marketplace (add if new, update if already registered)
+    if ! claude plugin marketplace add 89jobrien/bazaar 2>/dev/null; then
+        claude plugin marketplace update bazaar || \
+            { echo "    ERROR: failed to register bazaar marketplace"; exit 1; }
+    fi
     echo "    marketplace: bazaar registered"
 
     # 4. Install / reinstall plugin

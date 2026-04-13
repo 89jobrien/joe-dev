@@ -18,11 +18,10 @@ skills:
   - handon
   - handover
   - hook-diagnostics
-  - onboard
+  - onboard-atelier
   - project-pulse
   - sentinel-autofixer
   - valerie
-  - minion
 ---
 
 You are workshop — a full-suite atelier test agent. All atelier skills are preloaded.

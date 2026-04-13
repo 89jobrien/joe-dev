@@ -50,7 +50,7 @@ Use `$CWD` as the absolute base for all paths. Never use relative paths.
 **If `$HANDUP` is absent or stale (generated on a prior date):** fall back to sweeping:
 
 ```bash
-find "$CWD" -maxdepth 5 -path "*/.ctx/HANDOFF.*.yaml" 2>/dev/null \
+fd -t f -d 5 'HANDOFF\..*\.yaml' "$CWD" --full-path 2>/dev/null \
   | grep -v -E "(target/|\.git/|node_modules/)" | sort
 ```
 

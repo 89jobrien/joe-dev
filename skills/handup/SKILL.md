@@ -28,7 +28,7 @@ Use `$CWD` as the absolute base for all paths in this skill. Never use relative 
 ### 2. Sweep for HANDOFF files
 
 ```bash
-find "$CWD" -maxdepth 5 \( -path "*/.ctx/HANDOFF.*.yaml" -o -name "HANDOFF.md" \) 2>/dev/null \
+fd -t f -d 5 'HANDOFF\.(.*\.yaml|md)' "$CWD" --full-path 2>/dev/null \
   | grep -v -E "(target/|\.git/|node_modules/)" | sort
 ```
 
@@ -43,8 +43,8 @@ Skip files under `.git/`, `target/`, `node_modules/`.
 ### 3. Sweep for inline TODO/FIXME markers
 
 ```bash
-grep -rn --include="*.rs" --include="*.sh" --include="*.py" --include="*.toml" \
-  -E "(TODO|FIXME|HACK|XXX)(\(.*\))?:" "$CWD" 2>/dev/null | head -100
+rg -n -t rust -t sh -t py -t toml \
+  "(TODO|FIXME|HACK|XXX)(\(.*\))?:" "$CWD" 2>/dev/null | head -100
 ```
 
 Group by absolute file path. Omit matches inside `target/`, `.git/`, generated files.

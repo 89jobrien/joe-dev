@@ -76,6 +76,7 @@ Items have immutable `id`/`title`/`description`/`priority` (P0/P1/P2) and mutabl
 ## Key Design Rules
 
 - **Thin agents only** — agents delegate to `devkit`; no domain logic lives in `atelier/agents/`.
+- **`permissionMode: acceptEdits`** — `forge`, `conductor`, `minion`, and `workshop` all set this so they can edit files without per-call approval. This is intentional and scoped to these interactive agents only.
 - **No duplicate hooks** — global hooks (`rtk-rewrite.sh`, `cargo-fmt.nu`, etc.) live in
   `~/.claude/hooks/`; never copy them here.
 - **`cargo-gate` runs xtask first** — always calls `cargo xtask pre-commit`; the skill adds

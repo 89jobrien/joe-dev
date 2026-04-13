@@ -51,6 +51,7 @@ cd ~/dev/atelier && just init
 cd ~/dev/sanctum && just init
 
 # Optional
+git clone https://github.com/89jobrien/hand ~/dev/hand
 git clone https://github.com/89jobrien/orca-strait ~/dev/orca-strait
 cd ~/dev/hand && just init
 cd ~/dev/orca-strait && just init
