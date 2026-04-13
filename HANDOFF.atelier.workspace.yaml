@@ -1,6 +1,6 @@
 project: atelier
 id: atelier
-updated: 2026-04-05
+updated: 2026-04-13
 
 items:
 - id: atelier-1
@@ -131,6 +131,13 @@ items:
   - /Users/joe/.config/obfsck/allowlist
 
 log:
+- date: 2026-04-13
+  summary: >
+    handon scoped to single git repo (removed workspace sweep fallback); handup new skill
+    for cwd+nested HANDOFF/TODO survey, read-only; midion (sonnet) and maxion (opus) P2
+    agents added with parallel dispatch, writing-solid-rust skill, cargo check hook;
+    agents aligned to forge structure with examples frontmatter; plugin pushed to GitHub.
+  commits: [4433d68, 6e93e51, 87b7b8a, a5150fe]
 - date: 2026-04-05
   summary: >
     atelier-8 done — coursers Rust binary extracted from nu hooks; initial commit pushed to
