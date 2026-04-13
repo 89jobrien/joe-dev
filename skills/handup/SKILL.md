@@ -17,55 +17,91 @@ next; `handon` is how you get there.
 
 ## Steps
 
-### 1. Sweep for HANDOFF files
-
-Glob from cwd downward for `HANDOFF.*.yaml` and `HANDOFF.md`:
+### 1. Resolve CWD
 
 ```bash
-find . -maxdepth 5 \( -path "*/.ctx/HANDOFF.*.yaml" -o -name "HANDOFF.md" \) 2>/dev/null \
+CWD=$(pwd)
+```
+
+Use `$CWD` as the absolute base for all paths in this skill. Never use relative paths.
+
+### 2. Sweep for HANDOFF files
+
+```bash
+find "$CWD" -maxdepth 5 \( -path "*/.ctx/HANDOFF.*.yaml" -o -name "HANDOFF.md" \) 2>/dev/null \
   | grep -v -E "(target/|\.git/|node_modules/)" | sort
 ```
 
 For each file found:
 - Read `items` list (YAML) or relevant sections (MD)
 - Filter to `status: open` or `status: blocked`
-- Note the repo root (nearest ancestor containing `.git`)
-- Read `.ctx/HANDOFF.state.yaml` alongside if present — extract `branch`, `build`, `tests`
+- Find repo root: `git -C "$(dirname <file>)" rev-parse --show-toplevel 2>/dev/null`
+- Read `<repo-root>/.ctx/HANDOFF.state.yaml` if present — extract `branch`, `build`, `tests`
 
 Skip files under `.git/`, `target/`, `node_modules/`.
 
-### 2. Sweep for inline TODO/FIXME markers
-
-Search source files from cwd downward for `TODO`, `FIXME`, `HACK`, `XXX` comments:
+### 3. Sweep for inline TODO/FIXME markers
 
 ```bash
 grep -rn --include="*.rs" --include="*.sh" --include="*.py" --include="*.toml" \
-  -E "(TODO|FIXME|HACK|XXX)(\(.*\))?:" . 2>/dev/null | head -100
+  -E "(TODO|FIXME|HACK|XXX)(\(.*\))?:" "$CWD" 2>/dev/null | head -100
 ```
 
-Group by file. Omit matches inside `target/`, `.git/`, generated files.
+Group by absolute file path. Omit matches inside `target/`, `.git/`, generated files.
 
 Only surface these if no HANDOFF.yaml exists for that subtree, or if the count is
 notably high (>5 per project). They are supplementary context, not primary items.
 
-### 3. Group by project
+### 4. Group by project
 
 For each distinct repo root found (or subdirectory if no `.git`), build a project block:
 
 ```
-### <project-name> — <relative path>
+### <project-name> — <absolute-path>
 Branch: <branch> | Build: <build> | Tests: <tests>   (omit if .ctx absent)
 
   P0  [id] title                     (status: blocked or urgent keywords)
   P1  [id] title
   P2  [id] title
   ...
-  TODO  src/foo.rs:42  TODO: fix borrow issue
+  TODO  /abs/path/to/src/foo.rs:42  TODO: fix borrow issue
 ```
 
 Sort projects: those with P0 items first, then by P1 count descending.
 
-### 4. Render summary
+### 5. Write .ctx/HANDUP.json
+
+Write findings to `$CWD/.ctx/HANDUP.json`. Create `$CWD/.ctx/` if it does not exist.
+This file is gitignored (covered by `.ctx/*`) — do not commit it.
+
+Schema:
+
+```json
+{
+  "generated": "<YYYY-MM-DD>",
+  "cwd": "<absolute-path>",
+  "projects": [
+    {
+      "name": "<project-name>",
+      "path": "<absolute-path-to-project>",
+      "repo_root": "<absolute-repo-root>",
+      "handoff_path": "<absolute-path-to-HANDOFF.yaml>",
+      "branch": "<branch or null>",
+      "build": "<clean|failing|unknown|null>",
+      "tests": "<summary or null>",
+      "items": [
+        { "id": "<id>", "priority": "<P0|P1|P2>", "status": "<status>", "title": "<title>" }
+      ],
+      "todos": ["<absolute-path>:<line>  <text>"]
+    }
+  ],
+  "recommendation": { "project": "<name>", "reason": "<one-line rationale>" }
+}
+```
+
+Overwrite any existing `HANDUP.json` from a prior run.
+
+### 6. Render summary
 
 Output the full survey, then a recommendation block:
 
@@ -78,20 +114,16 @@ Output the full survey, then a recommendation block:
 ## Where to next?
 
 Highest urgency: <project> — <reason> (e.g. "1 P0 item: broken build")
-Suggested: cd <path> && /atelier:handon
+Suggested: cd <absolute-path> && /atelier:handon
+
+Findings written to: <cwd>/.ctx/HANDUP.json
 ```
 
 If cwd is itself a git repo with a HANDOFF.yaml, include it first as "current project"
 before sweeping subdirs.
 
 If nothing is found anywhere: report "No open handoff items or TODO markers found under
-`<cwd>`." and stop.
-
-### 5. No writes
-
-Do not modify any file. Do not commit. Do not update SQLite. Do not run builds or tests.
-State data (branch, build, tests) comes only from `.ctx/HANDOFF.state.yaml` written by
-a prior `handoff` session — never from live shell commands.
+`<cwd>`." and stop (still write an empty `HANDUP.json` with `"projects": []`).
 
 ## Edge Cases
 
