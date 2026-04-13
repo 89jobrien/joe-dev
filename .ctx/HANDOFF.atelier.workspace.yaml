@@ -1,6 +1,6 @@
 project: atelier
 id: atelier
-updated: 2026-04-14
+updated: 2026-04-13
 items:
 - id: atelier-1
   doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
@@ -281,7 +281,19 @@ items:
   completed: 2026-04-13
 
 log:
-- date: 2026-04-14
+- date: 2026-04-13
+  summary: >
+    Pulled 23 remote commits (bazaar marketplace, bin/ scripts, atelier-14/15 done); resolved
+    plugin.json and HANDOFF conflicts; added pre-push version-stamp hooks to sanctum and
+    orca-strait; switched both to @bazaar install; fixed global pre-commit cmd/**+internal/**
+    pathspec exclusions; updated CLAUDE.md with bazaar registration and obfsck gotchas.
+  commits:
+  - fa43d98
+  - 17669df
+  - a59a5e5
+  - 945499a
+  - 68857c3
+- date: 2026-04-13
   summary: |
     Fixed preflight shell detection: replaced `echo $SHELL` with `which nu zsh bash | head -1`
     in all three CLAUDE.md files (~/.claude, ~/dev, atelier). Added CLAUDE.md note that
