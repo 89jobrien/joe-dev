@@ -19,15 +19,14 @@ init:
         exit 1
     fi
 
-    # 3. Register local marketplace (self-contained in this repo)
-    REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-    claude plugin marketplace add "$REPO_DIR" 2>/dev/null || \
-        claude plugin marketplace update atelier 2>/dev/null || true
-    echo "    marketplace: atelier registered"
+    # 3. Register bazaar marketplace
+    claude plugin marketplace add 89jobrien/bazaar 2>/dev/null || \
+        claude plugin marketplace update bazaar 2>/dev/null || true
+    echo "    marketplace: bazaar registered"
 
     # 4. Install / reinstall plugin
     claude plugin uninstall atelier --force 2>/dev/null || true
-    claude plugin install atelier@atelier
+    claude plugin install atelier@bazaar
     echo "    plugin: atelier installed"
 
     echo ""
@@ -37,7 +36,7 @@ init:
 # Reinstall plugin without re-running full init
 reinstall:
     #!/usr/bin/env bash
-    claude plugin marketplace update atelier 2>/dev/null || true
+    claude plugin marketplace update bazaar 2>/dev/null || true
     claude plugin uninstall atelier --force 2>/dev/null || true
-    claude plugin install atelier@atelier
+    claude plugin install atelier@bazaar
     echo "[atelier] reinstalled — restart Claude Code to apply"
