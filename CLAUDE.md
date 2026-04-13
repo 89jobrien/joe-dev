@@ -76,6 +76,8 @@ Items have immutable `id`/`title`/`description`/`priority` (P0/P1/P2) and mutabl
 ## Key Design Rules
 
 - **Thin agents only** — agents delegate to `devkit`; no domain logic lives in `atelier/agents/`.
+- `.ctx/HANDOFF.state.yaml` is intentionally gitignored — it tracks local session state and appearing
+  untracked in `git status` is normal, not a dirty tree.
 - **No duplicate hooks** — global hooks (`rtk-rewrite.sh`, `cargo-fmt.nu`, etc.) live in
   `~/.claude/hooks/`; never copy them here.
 - **`cargo-gate` runs xtask first** — always calls `cargo xtask pre-commit`; the skill adds
