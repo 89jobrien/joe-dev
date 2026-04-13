@@ -4,6 +4,11 @@ description:
   Use at the start of a session to orient to outstanding work — scans for
   HANDOFF.yaml (or HANDOFF.md) files, triages items by priority, and acts according to
   risk level without asking for approval on P1/P2 work.
+model: haiku
+effort: low
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 # handon — Session-Start Handoff Reader

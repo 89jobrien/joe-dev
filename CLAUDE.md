@@ -30,20 +30,22 @@ atelier/
 └── justfile                     # Setup automation
 ```
 
-### Skills (10)
+### Skills (11)
 
-| Skill                | Trigger examples                                        |
-| -------------------- | ------------------------------------------------------- |
-| `cargo-gate`         | "run gates", "validate rust", "pre-commit check"        |
-| `sentinel-autofixer` | "apply review fixes", "fix sentinel suggestions"        |
-| `hook-diagnostics`   | "show hook status", "what hooks ran"                    |
-| `git-guard`          | "safe to commit", "check merge strategy"                |
-| `ci-assist`          | "edit workflow", "fix CI", "check cross-compile"        |
-| `project-pulse`      | "end session", "capture state", "session summary"       |
-| `handoff`            | "write handoff", "end of session"                       |
-| `handon`             | "start session", "orient to work", "what's outstanding" |
-| `handover`           | "visualize the handoff", "show handoff"                 |
-| `onboard`            | "onboard me", "how do I set up atelier"                 |
+| Skill                | Trigger examples                                                     |
+| -------------------- | -------------------------------------------------------------------- |
+| `cargo-gate`         | "run gates", "validate rust", "pre-commit check"                     |
+| `sentinel-autofixer` | "apply review fixes", "fix sentinel suggestions"                     |
+| `hook-diagnostics`   | "show hook status", "what hooks ran"                                 |
+| `git-guard`          | "safe to commit", "check merge strategy"                             |
+| `ci-assist`          | "edit workflow", "fix CI", "check cross-compile"                     |
+| `project-pulse`      | "end session", "capture state", "session summary"                    |
+| `handoff`            | "write handoff", "end of session"                                    |
+| `handon`             | "start session", "orient to work", "what's outstanding"              |
+| `handup`             | "survey all projects", "what's open across repos"                    |
+| `handdown`           | "write back analysis", "annotate handoffs", "persist handup context" |
+| `handover`           | "visualize the handoff", "show handoff"                              |
+| `onboard`            | "onboard me", "how do I set up atelier"                              |
 
 ### Agents (5)
 

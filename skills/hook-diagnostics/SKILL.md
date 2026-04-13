@@ -3,6 +3,11 @@ name: hook-diagnostics
 description: This skill should be used when the user asks to "show hook status",
   "hook failures", "what hooks ran", "why did my hook fail", "hook overhead",
   "list active hooks", or wants visibility into Claude Code hook execution and failures.
+model: haiku
+effort: low
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 # hook-diagnostics

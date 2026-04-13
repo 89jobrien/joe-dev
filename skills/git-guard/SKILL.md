@@ -3,6 +3,11 @@ name: git-guard
 description: This skill should be used when the user asks to "safe to commit",
   "check merge strategy", "commit safely", "is it safe to merge", "should I rebase
   or merge", or wants to verify the git strategy is safe before committing or merging.
+model: haiku
+effort: low
+allowed-tools:
+  - Bash
+  - Read
 ---
 
 # git-guard

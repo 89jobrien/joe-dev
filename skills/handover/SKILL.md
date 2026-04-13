@@ -6,6 +6,12 @@ description: >
   a path to a HANDOFF file. Reads HANDOFF.*.{yaml,json,md} files and produces a prose
   summary plus Mermaid diagrams for project orientation.
 version: 0.1.0
+model: haiku
+effort: low
+argument-hint: "[path-to-handoff]"
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 # handover — Handoff Visualizer

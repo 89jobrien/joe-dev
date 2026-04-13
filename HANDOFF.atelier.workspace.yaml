@@ -1,12 +1,12 @@
 project: atelier
 id: atelier
 updated: 2026-04-05
-
 items:
 - id: atelier-1
+  doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
   name: install-and-test-plugins
   priority: P1
-  status: done
+  status: open
   title: Install and test both plugins in a live Claude session
   description: |
     Install atelier and sanctum via `claude --plugin-dir` and verify skills trigger
@@ -15,9 +15,10 @@ items:
   extra: []
   completed: 2026-04-05
 - id: atelier-2
+  doob_uuid: ab4422fd-ccd2-43d9-b1cc-c58f9aa32429
   name: handover-diagram-script
   priority: P1
-  status: done
+  status: open
   title: Wire generate-diagrams.py into handover skill output
   description: |
     scripts/generate-diagrams.py is complete and working (uv run, pyyaml, 4 diagram types:
@@ -30,6 +31,7 @@ items:
   extra: []
   completed: 2026-04-05
 - id: atelier-3
+  doob_uuid: 050b2a2e-13c7-4a6e-a45d-5e1b18957de7
   name: add-claude-md
   priority: P2
   status: done
@@ -43,6 +45,7 @@ items:
   extra: []
   completed: 2026-04-05
 - id: atelier-4
+  doob_uuid: ad271290-7d38-431d-bd60-41c0c53ee53e
   name: rtk-hook-v3-update
   priority: P1
   status: done
@@ -56,6 +59,7 @@ items:
   extra: []
   completed: 2026-04-05
 - id: atelier-5
+  doob_uuid: 1bbfbb4f-5f3c-446c-afd5-bf09ef50c66f
   name: skills-references-and-scripts
   priority: P1
   status: done
@@ -86,21 +90,23 @@ items:
   extra: []
   completed: 2026-04-05
 - id: atelier-6
+  doob_uuid: 17714244-1b14-4bf7-967c-4f0fa502d661
   name: validate-new-scripts-next-session
   priority: P1
   status: done
-  completed: 2026-04-05
   title: Validate generate-diagrams.nu and sync-sqlite.sh in a fresh session
   description: |
     Validated: scripts present in cache 0.8.0+, nu script runs clean, SQLite syncs all items.
   files:
   - skills/handover/scripts/generate-diagrams.nu
   - skills/handoff/scripts/sync-sqlite.sh
+  extra: []
+  completed: 2026-04-05
 - id: atelier-7
+  doob_uuid: 874209e6-a817-47e9-b0fb-0a16325e771a
   name: fix-course-correct-exit-code
   priority: P1
   status: done
-  completed: 2026-04-05
   title: Fix pre-tool-course-correct.nu deny exit code protocol
   description: |
     Root cause found and resolved: load_rules was double-parsing JSON (open + from json),
@@ -109,11 +115,13 @@ items:
     permissionDecision deny + exit 0 is not honored by Claude Code. Accepted behavior.
   files:
   - /Users/joe/.claude/hooks/nu/pre/pre-tool-course-correct.nu
+  extra: []
+  completed: 2026-04-05
 - id: atelier-8
+  doob_uuid: 252e74fd-4830-4025-b004-e08d5f36e7ce
   name: extract-coursers-repo
   priority: P1
   status: done
-  completed: 2026-04-05
   title: Extract course-correction pipeline into standalone coursers repo
   description: |
     Extracted pre-tool-course-correct and post-tool-track-failures logic from nu scripts
@@ -129,18 +137,17 @@ items:
   - /Users/joe/.claude/hooks/nu/post/post-tool-track-failures.nu
   - /Users/joe/.config/git/hooks/pre-commit
   - /Users/joe/.config/obfsck/allowlist
-
+  extra: []
+  completed: 2026-04-05
 log:
 - date: 2026-04-05
-  summary: >
-    atelier-8 done — coursers Rust binary extracted from nu hooks; initial commit pushed to
-    GitHub; obfsck allowlist updated; Cargo.lock excluded from global pre-commit scan.
+  summary: |
+    atelier-8 done — coursers Rust binary extracted from nu hooks; initial commit pushed to GitHub; obfsck allowlist updated; Cargo.lock excluded from global pre-commit scan.
   commits:
   - ca7ffdc
 - date: 2026-04-05
-  summary: >
-    E2E session — validated version bump flow (0.7.0→0.8.3); fixed pre-commit hook to include
-    README.md in bump trigger; removed stale .disabled hook entries from settings.json.
+  summary: |
+    E2E session — validated version bump flow (0.7.0→0.8.3); fixed pre-commit hook to include README.md in bump trigger; removed stale .disabled hook entries from settings.json.
   commits:
   - 21fe73f
   - 014a08d

@@ -4,6 +4,12 @@ description:
   This skill should be used when the user asks to "run gates", "validate rust",
   "pre-commit check", "run cargo validation", "check before committing", or wants to run
   the full Rust validation suite before a commit.
+model: sonnet
+effort: high
+allowed-tools:
+  - Bash
+  - Read
+  - Glob
 ---
 
 # cargo-gate

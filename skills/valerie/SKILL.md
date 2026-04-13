@@ -5,6 +5,13 @@ description: Task and todo management specialist. Use PROACTIVELY when users men
   parsing council analysis reports, HANDOFF files, or any structured recommendation
   source into doob todos — including auditing doob against HANDOFF context and writing
   back capture status.
+model: sonnet
+effort: medium
+argument-hint: "[project]"
+allowed-tools:
+  - Read
+  - Write
+  - Bash
 ---
 
 # valerie — Task and Todo Management

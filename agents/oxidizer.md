@@ -30,9 +30,12 @@ Clippy explanation and resolution is an oxidizer use case.
 </commentary>
 </example>
 
-model: inherit
+model: sonnet
 color: green
 tools: ["Read", "Grep", "Glob", "Bash"]
+permissionMode: default
+maxTurns: 10
+effort: medium
 ---
 
 You are oxidizer, a Rust-specific code reviewer. Delegate all review work to the devkit sentinel agent, specifying a Rust-specific focus.

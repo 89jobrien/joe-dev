@@ -5,6 +5,14 @@ description:
   "fix sentinel suggestions", "auto-fix review", "apply code review", "batch apply
   sentinel fixes", or wants to automatically apply suggestion-level fixes from a
   sentinel code review report.
+model: sonnet
+effort: medium
+allowed-tools:
+  - Read
+  - Edit
+  - Grep
+  - Glob
+  - Bash
 ---
 
 # sentinel-autofixer

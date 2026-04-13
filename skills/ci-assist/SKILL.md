@@ -4,6 +4,12 @@ description:
   This skill should be used when the user asks to "edit workflow", "fix CI",
   "check cross-compile", "verify binary", "update github actions", "debug CI failure",
   "verify target triple", or needs help with CI/CD workflow files or cross-compilation.
+model: sonnet
+effort: medium
+allowed-tools:
+  - Read
+  - Bash
+  - Glob
 ---
 
 # ci-assist

@@ -4,6 +4,12 @@ description:
   This skill should be used when the user asks to "end session", "capture state",
   "session summary", "what changed this session", "summarize repos", "write session notes",
   or wants to capture multi-repo state at the end of a work session.
+model: sonnet
+effort: medium
+allowed-tools:
+  - Read
+  - Write
+  - Bash
 ---
 
 # project-pulse

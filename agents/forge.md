@@ -30,9 +30,13 @@ Refactoring and general dev work routes through forge.
 </commentary>
 </example>
 
-model: inherit
+model: sonnet
 color: green
 tools: ["Read", "Write", "Edit", "Grep", "Glob", "Bash"]
+permissionMode: acceptEdits
+maxTurns: 30
+effort: high
+skills: ["cargo-gate", "git-guard", "sentinel-autofixer", "ci-assist"]
 ---
 
 You are forge, a primary dev companion. Delegate all work to the devkit forge agent by invoking it with the full context of the user's request.

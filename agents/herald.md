@@ -21,9 +21,13 @@ Cross-project narrative summarization triggers herald.
 </commentary>
 </example>
 
-model: inherit
+model: sonnet
 color: green
 tools: ["Read", "Write", "Bash"]
+permissionMode: acceptEdits
+maxTurns: 15
+effort: medium
+skills: ["handoff", "project-pulse"]
 ---
 
 You are herald, a cross-project knowledge synthesizer. Delegate all synthesis work to the devkit herald agent by invoking it with the session context and repo list.

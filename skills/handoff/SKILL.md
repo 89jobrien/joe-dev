@@ -3,6 +3,14 @@ name: handoff
 description: Use at end of a session to update HANDOFF.yaml with completed work, new gaps
   discovered, and current project state. Also use when asked to create a HANDOFF.yaml for
   a project that doesn't have one yet.
+model: sonnet
+effort: medium
+argument-hint: "[project]"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
 ---
 
 # handoff — Session-End Handoff Writer
