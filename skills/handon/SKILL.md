@@ -1,23 +1,27 @@
 ---
 name: handon
 description:
-  Use at the start of a session to triage and execute outstanding work in the current
-  git repo. Reads the repo's HANDOFF.yaml, triages items by priority, and acts according
-  to risk level without asking for approval on P1/P2 work. Single-repo only — use
-  handup to survey nested or multi-project handoffs first.
+  Use at the start of a session to orient to outstanding work — scans for
+  HANDOFF.yaml (or HANDOFF.md) files, triages items by priority, and acts according to
+  risk level without asking for approval on P1/P2 work.
+model: haiku
+effort: low
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 # handon — Session-Start Handoff Reader
 
 ## Overview
 
-Find the current repo's HANDOFF file, parse items by priority, and act:
+Scan the current directory tree for handoff files, parse items by priority, and act:
 
 | Priority | Action                                                                            |
 | -------- | --------------------------------------------------------------------------------- |
 | P0       | Validate current state immediately. Report to user. Ask before touching anything. |
 | P1       | Execute autonomously. Stop only if scope expands or something unexpected happens. |
-| P2       | Delegate to subagents **in parallel**. Cap at 5 concurrent.                       |
+| P2       | Delegate to subagents. Cap at 5 concurrent.                                       |
 
 ## Steps
 
@@ -31,10 +35,10 @@ handoff-detect          # returns path if exists, expected path + exit 2 if not
 - Exit 2 → file missing, expected path printed — offer to create via `/atelier:handoff`
 - Exit 1 → not in a git repo — report and stop
 
-If `handoff-detect` is not on PATH, fall back to globbing the repo root for `HANDOFF.*.yaml`.
+If `handoff-detect` is not on PATH, fall back to globbing `.ctx/` for `HANDOFF.*.yaml`.
 
-If not inside a git repo (no `.git` found walking up from cwd), stop and report:
-"Not in a git repo. Use `/atelier:handup` to survey nested projects from here."
+If invoked from a workspace root (e.g. `~/dev`) with no `.git`, sweep subdirs for
+`HANDOFF.*.*.yaml` files instead.
 
 If only a legacy `HANDOFF.md` exists at repo root, read it as freeform. Do not convert unless
 asked.
@@ -61,9 +65,9 @@ Before parsing the local file, check the local SQLite database for status overri
 outside this session (e.g. by another tool or a manual update):
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/sync-sqlite.sh \
+SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/handoff-db.sh \
   2>/dev/null | sort -V | tail -1)
-bash "$SCRIPT" --project <project> --query 2>/dev/null
+bash "$SCRIPT" query --project <project> 2>/dev/null
 ```
 
 For each row returned, if the SQLite `status` differs from the YAML `status`, prefer SQLite and
@@ -123,22 +127,7 @@ Work through each open P1 without asking. Stop and surface to user when:
 
 ### 8. Delegate P2 items
 
-Dispatch all P2 subagents **in parallel** in a single message (cap 5 concurrent). Never
-dispatch them sequentially — send all Agent tool calls in one response.
-
-**Model selection per item:**
-
-| Agent | Model | When to use |
-| ----- | ----- | ----------- |
-| `atelier:midion` | sonnet | Default for most P2 work — implementation, refactors, fixes |
-| `atelier:maxion` | opus | Only when the item needs a structured task breakdown first — one item at a time, produces a focused task list, does not implement |
-
-Use `maxion` only when a P2 item is too ambiguous or large to hand directly to an
-implementer. It produces a task list for that one item; the tasks it creates become the
-actual work. Do not dispatch multiple `maxion` agents in parallel — it handles one issue
-at a time to stay focused.
-
-Each subagent must:
+Dispatch one subagent per P2 item (cap 5 concurrent). Each subagent must:
 
 - Receive explicit `--allowedTools` list
 - Verify `git status` is clean before starting
@@ -166,8 +155,8 @@ Then update `HANDOFF.yaml`:
 
 - Mark done items `status: done`, add `completed: <today>`
 - Add `log` entry for this session (one-liner, prepend to list)
-- Upsert all items to SQLite via `sync-sqlite.sh` (see handoff skill step 6)
-- Commit: `git add HANDOFF.yaml && git commit -m "docs: update handoff"`
+- Upsert all items to SQLite via `handoff-db.sh upsert` (see handoff skill step 6)
+- Commit: `git add .ctx/HANDOFF.<project>.*.yaml && git commit -m "docs: update handoff"`
 
 ## Edge Cases
 
@@ -181,3 +170,9 @@ for structured triage."
 
 **Blocked item:** Do not attempt. Report the blocker to user verbatim from the `description`
 field.
+
+## Additional Resources
+
+- **`references/triage-patterns.md`** — priority classification guide, P0 validation
+  sequence, P1 autonomous execution rules, P2 subagent dispatch template, multi-repo sweep,
+  human-edit review patterns, SQLite conflict resolution, blocked item handling

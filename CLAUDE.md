@@ -63,11 +63,11 @@ All agents are thin wrappers — domain logic lives in `devkit`. Do not embed be
 
 Three-file model per project:
 
-| File                                        | Committed | Purpose                                        |
-| ------------------------------------------- | --------- | ---------------------------------------------- |
-| `HANDOFF.<project>.<base>.yaml` (repo root) | YES       | Source of truth — tasks, log, metadata         |
-| `.ctx/HANDOFF.state.yaml`                   | NO        | Project snapshot (branch, build status, tests) |
-| `.ctx/HANDOFF.md`                           | NO        | Rendered human-readable reference              |
+| File                                            | Committed | Purpose                                        |
+| ----------------------------------------------- | --------- | ---------------------------------------------- |
+| `.ctx/HANDOFF.<project>.<base>.yaml` (in `.ctx/`) | YES     | Source of truth — tasks, log, metadata         |
+| `.ctx/HANDOFF.state.yaml`                       | NO        | Project snapshot (branch, build status, tests) |
+| `.ctx/HANDOFF.md`                               | NO        | Rendered human-readable reference              |
 
 Items have immutable `id`/`title`/`description`/`priority` (P0/P1/P2) and mutable `status`
 (open/done/parked/blocked). The log section prepends newest-first. Items also sync to

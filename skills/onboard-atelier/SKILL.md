@@ -4,6 +4,11 @@ description:
   Use when a user says "onboard me", "how do I set up atelier", "what does this plugin
   do", "walk me through setup", or invokes /atelier:onboard. Also suggested by handon when neither
   atelier nor sanctum appear to have been verified in a live session before.
+model: haiku
+effort: low
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 # onboard — atelier + sanctum setup
@@ -46,7 +51,6 @@ cd ~/dev/atelier && just init
 cd ~/dev/sanctum && just init
 
 # Optional
-git clone https://github.com/89jobrien/hand ~/dev/hand
 git clone https://github.com/89jobrien/orca-strait ~/dev/orca-strait
 cd ~/dev/hand && just init
 cd ~/dev/orca-strait && just init
@@ -65,13 +69,12 @@ In a new Claude session, trigger each skill to confirm it loads:
 
 | Skill                    | Test phrase              |
 | ------------------------ | ------------------------ |
-| atelier:onboard          | `/atelier:onboard`       |
+| atelier:onboard-atelier  | `/onboard-atelier`       |
 | atelier:handon           | "what's outstanding"     |
 | atelier:cargo-gate       | "run gates"              |
 | atelier:hook-diagnostics | "show hook status"       |
 | atelier:git-guard        | "safe to commit"         |
-| sanctum:op-resolver      | `/sanctum:op-resolver`   |
-| hand:on                  | `/hand:on`               |
+| sanctum:op-resolver      | `/op-resolver`           |
 | orca-strait              | `/orca-strait --dry-run` |
 
 Expected: Claude responds using skill content, not a generic answer.
@@ -120,4 +123,4 @@ cd ~/dev/<plugin> && just reinstall
 > 1. sanctum validates 1Password auth and traces your `.envrc` chain
 > 2. atelier:handon surfaces outstanding HANDOFF items across active repos
 >
-> Run `/atelier:onboard` again any time to re-verify the setup.
+> Run `/onboard-atelier` again any time to re-verify the setup.

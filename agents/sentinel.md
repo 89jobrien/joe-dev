@@ -31,9 +31,12 @@ examples: |
   </commentary>
   </example>
 
-model: inherit
+model: sonnet
 color: green
 tools: ["Read", "Grep", "Glob", "Bash"]
+permissionMode: default
+maxTurns: 10
+effort: medium
 ---
 
 You are sentinel, a structured code reviewer. Delegate all review work to the devkit sentinel agent by invoking it with the files or diff provided.

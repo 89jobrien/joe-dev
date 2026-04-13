@@ -3,6 +3,14 @@ name: handoff
 description: Use at end of a session to update HANDOFF.yaml with completed work, new gaps
   discovered, and current project state. Also use when asked to create a HANDOFF.yaml for
   a project that doesn't have one yet.
+model: sonnet
+effort: medium
+argument-hint: "[project]"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
 ---
 
 # handoff — Session-End Handoff Writer
@@ -81,12 +89,12 @@ Omit the field if empty.
 
 ### 6. Sync to SQLite
 
-Resolve and run `sync-sqlite.sh` from the plugin cache:
+Resolve and run `handoff-db.sh` from the plugin cache:
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/sync-sqlite.sh \
+SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/handoff-db.sh \
   2>/dev/null | sort -V | tail -1)
-bash "$SCRIPT" --project <project> --handoff <path-to-HANDOFF.yaml>
+bash "$SCRIPT" upsert --project <project> --handoff <path-to-HANDOFF.yaml>
 ```
 
 If the script is not found or exits non-zero, skip and note it in output.
@@ -119,15 +127,34 @@ Rules:
 
 ### 8. Ensure .gitignore covers .ctx/
 
-Add `.ctx/` to `.gitignore` if not present.
+Verify `.gitignore` has:
+```
+.ctx/*
+!.ctx/HANDOFF.*.yaml
+```
 
-### 9. Commit
+Add or update if not present. This pattern ignores all `.ctx/` contents except HANDOFF files.
+
+### 9. Migration preflight
+
+Before writing, check if the HANDOFF file is still at the repo root. If so, migrate it first:
+
 ```bash
-git add HANDOFF.yaml
+SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/migrate-handoff.sh \
+  2>/dev/null | sort -V | tail -1)
+bash "$SCRIPT" <repo-root> <old-root-path>
+```
+
+Then stage the rename and continue with the new `.ctx/` path.
+
+### 10. Commit
+
+```bash
+git add .ctx/HANDOFF.<project>.*.yaml
 git commit -m "docs: update handoff"
 ```
 
-Stage only `HANDOFF.yaml`. Never stage anything under `.ctx/`.
+Stage only the HANDOFF file under `.ctx/`. Never stage anything else under `.ctx/`.
 
 ## Creating from Scratch
 
@@ -140,6 +167,9 @@ git status
 
 Populate `log` from recent commits. Leave `items` empty or with one P1 if there's an obvious
 next step. Write `.ctx/HANDOFF.state.yaml` from actual build/test output.
+
+Place the new HANDOFF file at `.ctx/HANDOFF.<project>.workspace.yaml` (or
+`.ctx/HANDOFF.<project>.<cwd-basename>.yaml` if invoked from a subdirectory).
 
 ## Legacy HANDOFF.md
 
