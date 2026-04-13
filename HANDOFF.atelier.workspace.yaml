@@ -1,12 +1,12 @@
 project: atelier
 id: atelier
-updated: 2026-04-05
+updated: 2026-04-13
 items:
 - id: atelier-1
   doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
   name: install-and-test-plugins
   priority: P1
-  status: open
+  status: done
   title: Install and test both plugins in a live Claude session
   description: |
     Install atelier and sanctum via `claude --plugin-dir` and verify skills trigger
@@ -18,7 +18,7 @@ items:
   doob_uuid: ab4422fd-ccd2-43d9-b1cc-c58f9aa32429
   name: handover-diagram-script
   priority: P1
-  status: open
+  status: done
   title: Wire generate-diagrams.py into handover skill output
   description: |
     scripts/generate-diagrams.py is complete and working (uv run, pyyaml, 4 diagram types:
@@ -139,7 +139,66 @@ items:
   - /Users/joe/.config/obfsck/allowlist
   extra: []
   completed: 2026-04-05
+- id: atelier-9
+  name: fix-blocking-sentinel-issues
+  priority: P1
+  status: done
+  title: Fix B3/B4/B1 blocking issues found by sentinel review
+  description: |
+    Sentinel one-shot review found 5 blocking issues. Resolved B3 (circular symlinks
+    atelier/agents and atelier/skills, nested manifest), B4 (pre-push gutted to plugit call
+    — restored version-stamp + reinstall logic), and B1 (justfile used atelier@atelier
+    which never resolves — fixed to atelier@local). Skills load by directory convention;
+    no manifest registration needed.
+  files:
+  - atelier/agents
+  - atelier/skills
+  - atelier/.claude-plugin/plugin.json
+  - marketplace.json
+  - .githooks/pre-push
+  - justfile
+  extra: []
+  completed: 2026-04-13
+- id: atelier-10
+  name: address-remaining-sentinel-suggestions
+  priority: P2
+  status: open
+  title: Address remaining sentinel suggestions (S1–S7) and observations (O1–O5)
+  description: |
+    Sentinel review surfaced 7 suggestions and 5 observations not yet addressed:
+    S1: maxion/midion reference non-existent writing-solid-rust skill.
+    S2/S3: handup/handdown use grep/find in code blocks (blocked anti-patterns — use rg/fd).
+    S4: workshop agent lists stale onboard name and minion as a skill (it's an agent).
+    S5: minion agent has direct behavioral instructions — violates thin-wrapper rule.
+    S6: HANDOFF atelier-1/atelier-2 had open status with completed dates (fixed this session).
+    S7: onboard-atelier Step 2 cd ~/dev/hand but never clones hand repo first.
+    O1: .claude-plugin/marketplace.json leftover after root marketplace.json removed.
+    O3: forge/conductor have permissionMode acceptEdits — undocumented in CLAUDE.md.
+    O5: justfile || true on marketplace add swallows errors silently.
+  files:
+  - agents/maxion.md
+  - agents/midion.md
+  - agents/minion.md
+  - agents/workshop.md
+  - skills/handup/SKILL.md
+  - skills/handdown/SKILL.md
+  - skills/onboard-atelier/SKILL.md
+  - .claude-plugin/marketplace.json
+  - justfile
+  - CLAUDE.md
+  extra: []
 log:
+- date: 2026-04-13
+  summary: |
+    Merged remote changes (13 commits ahead); resolved conflicts taking remote; fixed B3
+    (circular symlinks removed), B4 (pre-push restored), B1/O5 (justfile atelier@local);
+    sentinel review run; all blocking issues resolved; pushed 63bca6e.
+  commits:
+  - c029464
+  - 3789cc6
+  - 43c47a2
+  - 63bca6e
+  - f632ee4
 - date: 2026-04-05
   summary: |
     atelier-8 done — coursers Rust binary extracted from nu hooks; initial commit pushed to GitHub; obfsck allowlist updated; Cargo.lock excluded from global pre-commit scan.
