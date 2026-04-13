@@ -17,7 +17,7 @@ Find the current repo's HANDOFF file, parse items by priority, and act:
 | -------- | --------------------------------------------------------------------------------- |
 | P0       | Validate current state immediately. Report to user. Ask before touching anything. |
 | P1       | Execute autonomously. Stop only if scope expands or something unexpected happens. |
-| P2       | Delegate to subagents. Cap at 5 concurrent.                                       |
+| P2       | Delegate to subagents **in parallel**. Cap at 5 concurrent.                       |
 
 ## Steps
 
@@ -123,7 +123,22 @@ Work through each open P1 without asking. Stop and surface to user when:
 
 ### 8. Delegate P2 items
 
-Dispatch one subagent per P2 item (cap 5 concurrent). Each subagent must:
+Dispatch all P2 subagents **in parallel** in a single message (cap 5 concurrent). Never
+dispatch them sequentially — send all Agent tool calls in one response.
+
+**Model selection per item:**
+
+| Agent | Model | When to use |
+| ----- | ----- | ----------- |
+| `atelier:midion` | sonnet | Default for most P2 work — implementation, refactors, fixes |
+| `atelier:maxion` | opus | Only when the item needs a structured task breakdown first — one item at a time, produces a focused task list, does not implement |
+
+Use `maxion` only when a P2 item is too ambiguous or large to hand directly to an
+implementer. It produces a task list for that one item; the tasks it creates become the
+actual work. Do not dispatch multiple `maxion` agents in parallel — it handles one issue
+at a time to stay focused.
+
+Each subagent must:
 
 - Receive explicit `--allowedTools` list
 - Verify `git status` is clean before starting
