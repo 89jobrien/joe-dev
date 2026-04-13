@@ -133,6 +133,12 @@ items:
 log:
 - date: 2026-04-13
   summary: >
+    handdown skill added — write-back counterpart to handup; appends discovery/escalation/note
+    extra entries and log entries to nested HANDOFF.yaml files after a cross-project survey;
+    syncs to SQLite and commits per repo. CLAUDE.md skills table updated (10 -> 11).
+  commits: []
+- date: 2026-04-13
+  summary: >
     handon scoped to single git repo (removed workspace sweep fallback); handup new skill
     for cwd+nested HANDOFF/TODO survey, read-only; midion (sonnet) and maxion (opus) P2
     agents added with parallel dispatch, writing-solid-rust skill, cargo check hook;
