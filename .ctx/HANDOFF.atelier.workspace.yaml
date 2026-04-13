@@ -284,6 +284,12 @@ items:
 log:
 - date: 2026-04-13
   summary: >
+    Explicitly excluded .ctx state/rendered files in .gitignore; removed duplicate HANDOVER.md
+    entry; confirmed HANDOFF.state.yaml already excluded via global gitignore.
+  commits:
+  - 0673ebe
+- date: 2026-04-13
+  summary: >
     Created bazaar marketplace (89jobrien/bazaar) with github source objects; moved handoff
     scripts to bin/ for PATH availability; fixed all SKILL.md script references; confirmed
     atelier@bazaar install works end-to-end in pre-push hook.
