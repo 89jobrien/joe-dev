@@ -1,6 +1,6 @@
 project: atelier
 id: atelier
-updated: 2026-04-13
+updated: 2026-04-14
 items:
 - id: atelier-1
   doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
@@ -253,6 +253,12 @@ items:
   - justfile
   extra: []
 log:
+- date: 2026-04-14
+  summary: |
+    Fixed preflight shell detection: replaced `echo $SHELL` with `which nu zsh bash | head -1`
+    in all three CLAUDE.md files (~/.claude, ~/dev, atelier). Added CLAUDE.md note that
+    .ctx/HANDOFF.state.yaml is intentionally gitignored. Saved shell detection pattern to memory.
+  commits: []
 - date: 2026-04-13
   summary: |
     Completed .ctx/ HANDOFF migration (atelier-11), separated handup/handdown concerns with
