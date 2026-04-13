@@ -284,6 +284,12 @@ items:
 log:
 - date: 2026-04-13
   summary: >
+    Verified plugin loads from bazaar cache (f53284d) after restart; handoff skill correctly
+    references handoff-db on PATH — no sync-sqlite.sh reference. Plugin pipeline confirmed
+    fully self-corrected.
+  commits: []
+- date: 2026-04-13
+  summary: >
     Explicitly excluded .ctx state/rendered files in .gitignore; removed duplicate HANDOVER.md
     entry; confirmed HANDOFF.state.yaml already excluded via global gitignore.
   commits:
