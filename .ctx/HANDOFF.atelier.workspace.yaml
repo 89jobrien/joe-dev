@@ -163,7 +163,8 @@ items:
 - id: atelier-10
   name: address-remaining-sentinel-suggestions
   priority: P2
-  status: open
+  status: done
+  completed: 2026-04-13
   title: Address remaining sentinel suggestions (S1–S7) and observations (O1–O5)
   description: |
     Sentinel review surfaced 7 suggestions and 5 observations not yet addressed:
@@ -282,6 +283,10 @@ items:
   completed: 2026-04-13
 
 log:
+- date: 2026-04-13
+  summary: >
+    atelier-10 done — fixed S2/S3 (fd/rg), S4 (workshop skills), S5 (minion body),
+    S7 (hand clone), O3 (permissionMode docs), O5 (justfile error handling). Committed 7688347.
 - date: 2026-04-13
   summary: >
     Verified plugin loads from bazaar cache (f53284d) after restart; handoff skill correctly
