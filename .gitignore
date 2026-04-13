@@ -1,6 +1,7 @@
 # Atelier gitignore
 .ctx/*
 !.ctx/HANDOFF.*.yaml
+!.ctx/HANDOFF.*.*.yaml
 .claude/*.local.md
 .claude/settings.local.json
 __pycache__/

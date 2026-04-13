@@ -1,6 +1,7 @@
 project: atelier
 id: atelier
 updated: 2026-04-13
+
 items:
 - id: atelier-1
   doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
@@ -244,17 +245,65 @@ items:
 - id: atelier-14
   name: chmod-handoff-scripts-in-install
   priority: P2
-  status: open
+  status: done
   title: Add chmod +x for handoff scripts in plugin install step
   description: |
     handoff-detect.sh, migrate-handoff.sh, and handoff-db.sh need chmod +x in justfile
-    or a post-install hook so they are executable after reinstall.
+    or a post-install hook so they are executable after reinstall. Resolved by moving
+    scripts to bin/ with chmod +x already set — plugin bin/ is added to PATH automatically.
   files:
-  - justfile
+  - bin/handoff-detect
+  - bin/handoff-db
+  - bin/migrate-handoff
   extra: []
+  completed: 2026-04-13
+- id: atelier-15
+  name: bazaar-marketplace-and-install-fix
+  priority: P1
+  status: done
+  title: Create bazaar marketplace repo and fix plugin install pipeline
+  description: |
+    Plugin install was broken — atelier@local and atelier@atelier both failed due to missing
+    marketplace.json and wrong source conventions. Created 89jobrien/bazaar as a dedicated
+    marketplace repo with correct github source objects. Moved scripts to bin/ (added to PATH
+    by Claude Code automatically). All SKILL.md files updated to call bin commands directly.
+    pre-push hook and justfile now use atelier@bazaar. Install confirmed working end-to-end.
+  files:
+  - bin/handoff-detect
+  - bin/handoff-db
+  - bin/migrate-handoff
+  - .githooks/pre-push
+  - justfile
+  - skills/handoff/SKILL.md
+  - skills/handon/SKILL.md
+  - skills/handdown/SKILL.md
+  - skills/handover/SKILL.md
+  extra: []
+  completed: 2026-04-13
+
 log:
 - date: 2026-04-13
-  summary: |
+  summary: >
+    Created bazaar marketplace (89jobrien/bazaar) with github source objects; moved handoff
+    scripts to bin/ for PATH availability; fixed all SKILL.md script references; confirmed
+    atelier@bazaar install works end-to-end in pre-push hook.
+  commits:
+  - c27daa0
+  - 816e786
+  - 7ce3030
+  - 7cd3ee9
+  - 7465c4d
+- date: 2026-04-13
+  summary: >
+    Pulled 14 remote commits; resolved plugin.json conflict; fixed generate-diagrams.nu
+    get -o flags and hotspots block-beta diagram; fixed script path resolution via
+    known_marketplaces.json (later superseded by bin/ approach).
+  commits:
+  - e2b54f9
+  - 50e3eb2
+  - 1b68f25
+- date: 2026-04-13
+  summary: >
     Completed .ctx/ HANDOFF migration (atelier-11), separated handup/handdown concerns with
     HANDUP.json handoff and absolute paths (atelier-12); pushed 7e57557/0214fcc; reinstalled.
   commits:
@@ -264,7 +313,7 @@ log:
   - 7e57557
   - 0214fcc
 - date: 2026-04-13
-  summary: |
+  summary: >
     Merged remote changes (13 commits ahead); resolved conflicts taking remote; fixed B3
     (circular symlinks removed), B4 (pre-push restored), B1/O5 (justfile atelier@local);
     sentinel review run; all blocking issues resolved; pushed 63bca6e.
@@ -275,21 +324,8 @@ log:
   - 63bca6e
   - f632ee4
 - date: 2026-04-05
-  summary: |
-    atelier-8 done — coursers Rust binary extracted from nu hooks; initial commit pushed to GitHub; obfsck allowlist updated; Cargo.lock excluded from global pre-commit scan.
+  summary: >
+    atelier-8 done — coursers Rust binary extracted from nu hooks; initial commit pushed
+    to GitHub; obfsck allowlist updated; Cargo.lock excluded from global pre-commit scan.
   commits:
   - ca7ffdc
-- date: 2026-04-05
-  summary: |
-    E2E session — validated version bump flow (0.7.0→0.8.3); fixed pre-commit hook to include README.md in bump trigger; removed stale .disabled hook entries from settings.json.
-  commits:
-  - 21fe73f
-  - 014a08d
-  - 871d747
-  - 85091b7
-  - bfd3a3d
-  - b269c9f
-- date: 2026-04-05
-  summary: Renamed plugin joe-dev → atelier — dirs, plugin.json, README, skills, HANDOFFs
-  commits:
-  - f326409
