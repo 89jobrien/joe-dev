@@ -162,7 +162,7 @@ items:
 - id: atelier-10
   name: address-remaining-sentinel-suggestions
   priority: P2
-  status: open
+  status: done
   title: Address remaining sentinel suggestions (S1–S7) and observations (O1–O5)
   description: |
     Sentinel review surfaced 7 suggestions and 5 observations not yet addressed:
@@ -177,16 +177,15 @@ items:
     O5: justfile || true on marketplace add swallows errors silently.
   files:
   - agents/maxion.md
-  - agents/midion.md
   - agents/minion.md
   - agents/workshop.md
   - skills/handup/SKILL.md
   - skills/handdown/SKILL.md
   - skills/onboard-atelier/SKILL.md
-  - .claude-plugin/marketplace.json
   - justfile
   - CLAUDE.md
   extra: []
+  completed: 2026-04-13
 - id: atelier-11
   name: handoff-ctx-migration
   priority: P1
@@ -335,6 +334,15 @@ log:
     devkit health runs against doob (78/100).
   commits:
   - 36c2436
+- date: 2026-04-13
+  summary: >
+    Resolved atelier-10 (7 sentinel suggestions + 5 observations). Fixed S1 (writing-solid-rust
+    skill reference), S2/S3 (replaced grep/find with rg/fd in handup/handdown), S4 (removed
+    minion from workshop skills list), S5 (minion now thin-wrapper), S7 (added hand clone to
+    onboard-atelier), O3 (documented forge/conductor permissionMode in CLAUDE.md), O5 (improved
+    justfile marketplace error handling). O1 (marketplace.json doesn't exist — fixed). Committed.
+  commits:
+  - 3473247
 - date: 2026-04-13
   summary: >
     Pulled 23 remote commits (bazaar marketplace, bin/ scripts, atelier-14/15 done); resolved
