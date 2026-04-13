@@ -92,6 +92,10 @@ Items have immutable `id`/`title`/`description`/`priority` (P0/P1/P2) and mutabl
 | `hand`        | Standalone session handoff (optional; atelier's handoff skills are the preferred path) |
 | `orca-strait` | Parallel TDD orchestrator for Rust workspaces (optional)                               |
 
+`atelier`, `sanctum`, and `orca-strait` install from the `bazaar` marketplace. Register it once
+per machine before any `@bazaar` install: `claude plugin marketplace add https://github.com/89jobrien/bazaar`
+`hand` and `vault-keeper` have no GitHub remote — `@local` only.
+
 ## Session Flow
 
 1. Session starts → `sanctum` validates 1Password auth, traces `.envrc`
