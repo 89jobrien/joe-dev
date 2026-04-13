@@ -1,6 +1,6 @@
 {
   "name": "atelier",
-  "version": "6e93e51",
+  "version": "d0db324",
   "description": "Personal dev workflow plugin — Rust gates, code review, CI, git safety, multi-repo pulse",
   "author": { "name": "Joseph O'Brien" }
 }
