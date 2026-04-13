@@ -1,6 +1,12 @@
 # Atelier gitignore
 .ctx/*
 !.ctx/HANDOFF.*.yaml
+!.ctx/HANDOFF.*.*.yaml
+# explicitly keep state/rendered files ignored (redundant with global, but clear intent)
+.ctx/HANDOFF.state.yaml
+.ctx/HANDOFF.md
+.ctx/HANDOVER.md
+.ctx/HANDUP.json
 .claude/*.local.md
 .claude/settings.local.json
 __pycache__/

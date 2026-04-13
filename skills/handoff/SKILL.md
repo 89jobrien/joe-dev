@@ -89,12 +89,10 @@ Omit the field if empty.
 
 ### 6. Sync to SQLite
 
-Resolve and run `handoff-db.sh` from the plugin cache:
+Run `handoff-db` (available on PATH via the plugin's `bin/`):
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/handoff-db.sh \
-  2>/dev/null | sort -V | tail -1)
-bash "$SCRIPT" upsert --project <project> --handoff <path-to-HANDOFF.yaml>
+handoff-db upsert --project <project> --handoff <path-to-HANDOFF.yaml>
 ```
 
 If the script is not found or exits non-zero, skip and note it in output.
@@ -140,9 +138,7 @@ Add or update if not present. This pattern ignores all `.ctx/` contents except H
 Before writing, check if the HANDOFF file is still at the repo root. If so, migrate it first:
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/migrate-handoff.sh \
-  2>/dev/null | sort -V | tail -1)
-bash "$SCRIPT" <repo-root> <old-root-path>
+migrate-handoff <repo-root> <old-root-path>
 ```
 
 Then stage the rename and continue with the new `.ctx/` path.

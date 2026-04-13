@@ -65,9 +65,7 @@ Before parsing the local file, check the local SQLite database for status overri
 outside this session (e.g. by another tool or a manual update):
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/handoff-db.sh \
-  2>/dev/null | sort -V | tail -1)
-bash "$SCRIPT" query --project <project> 2>/dev/null
+handoff-db query --project <project> 2>/dev/null
 ```
 
 For each row returned, if the SQLite `status` differs from the YAML `status`, prefer SQLite and

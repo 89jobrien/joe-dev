@@ -92,16 +92,17 @@ Keep prose minimal. No headers longer than 3 words. No HTML. No emoji.
 ## Mermaid Diagrams
 
 Prefer `generate-diagrams.nu` (faster, no deps); fall back to `generate-diagrams.py` if nu
-is not available. Resolve the highest installed version at runtime:
+is not available. Scripts live in the plugin's `skills/handover/scripts/` directory — resolve
+via `known_marketplaces.json`:
 
 ```bash
-CACHE=$HOME/.claude/plugins/cache/local/atelier
-NU_SCRIPT=$(ls $CACHE/*/skills/handover/scripts/generate-diagrams.nu 2>/dev/null | sort -V | tail -1)
-PY_SCRIPT=$(ls $CACHE/*/skills/handover/scripts/generate-diagrams.py 2>/dev/null | sort -V | tail -1)
+ATELIER_ROOT=$(python3 -c "import json,os; m=json.load(open(os.path.expanduser('~/.claude/plugins/known_marketplaces.json'))); print(m.get('atelier',{}).get('installLocation',''))")
+NU_SCRIPT="$ATELIER_ROOT/skills/handover/scripts/generate-diagrams.nu"
+PY_SCRIPT="$ATELIER_ROOT/skills/handover/scripts/generate-diagrams.py"
 
-if command -v nu >/dev/null 2>&1 && [[ -n "$NU_SCRIPT" ]]; then
+if command -v nu >/dev/null 2>&1 && [[ -f "$NU_SCRIPT" ]]; then
     nu "$NU_SCRIPT" --handoff <path-to-HANDOFF.yaml>
-elif [[ -n "$PY_SCRIPT" ]]; then
+elif [[ -f "$PY_SCRIPT" ]]; then
     uv run "$PY_SCRIPT" --handoff <path-to-HANDOFF.yaml>
 fi
 ```
