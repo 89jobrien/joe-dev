@@ -187,7 +187,82 @@ items:
   - justfile
   - CLAUDE.md
   extra: []
+- id: atelier-11
+  name: handoff-ctx-migration
+  priority: P1
+  status: done
+  title: Move HANDOFF files into .ctx/ with strict naming convention
+  description: |
+    All HANDOFF files now live in .ctx/ (committed) instead of repo root. Strict naming:
+    .ctx/HANDOFF.<project>.workspace.yaml (root) or .ctx/HANDOFF.<project>.<cwd>.yaml
+    (nested). New scripts: handoff-detect.sh, migrate-handoff.sh, handoff-db.sh (replaces
+    sync-sqlite.sh). .gitignore updated to .ctx/* + !.ctx/HANDOFF.*.yaml. Global pre-commit
+    hook updated with !**/HANDOFF.*.workspace.yaml exclusion. All 5 skill files updated.
+  files:
+  - .gitignore
+  - .ctx/HANDOFF.atelier.workspace.yaml
+  - skills/handoff/scripts/handoff-detect.sh
+  - skills/handoff/scripts/migrate-handoff.sh
+  - skills/handoff/scripts/handoff-db.sh
+  - skills/handoff/SKILL.md
+  - skills/handon/SKILL.md
+  - skills/handover/SKILL.md
+  - skills/handdown/SKILL.md
+  - skills/handup/SKILL.md
+  - skills/handoff/references/schema.md
+  - CLAUDE.md
+  - /Users/joe/.config/git/hooks/pre-commit
+  extra: []
+  completed: 2026-04-13
+- id: atelier-12
+  name: handup-handdown-separation
+  priority: P1
+  status: done
+  title: Separate handup/handdown concerns — HANDUP.json handoff, absolute paths
+  description: |
+    handup now writes $CWD/.ctx/HANDUP.json with full structured findings (projects, items,
+    todos, recommendation). handdown consumes HANDUP.json if present and same-day instead of
+    re-sweeping. Both skills use absolute paths throughout (CWD=$(pwd) base). handdown commit
+    step uses absolute repo_root and handoff_path from project record, skips on git error
+    without blocking other repos.
+  files:
+  - skills/handup/SKILL.md
+  - skills/handdown/SKILL.md
+  extra: []
+  completed: 2026-04-13
+- id: atelier-13
+  name: propagate-ctx-handoff-to-other-repos
+  priority: P2
+  status: open
+  title: Propagate .ctx/HANDOFF naming convention to other repos
+  description: |
+    Now that atelier uses .ctx/HANDOFF.<project>.workspace.yaml, other repos with root-level
+    HANDOFF files need migration. handoff-detect.sh auto-migrates on first use via
+    migrate-handoff.sh. Priority repos: minibox, devloop, doob, braid.
+  files: []
+  extra: []
+- id: atelier-14
+  name: chmod-handoff-scripts-in-install
+  priority: P2
+  status: open
+  title: Add chmod +x for handoff scripts in plugin install step
+  description: |
+    handoff-detect.sh, migrate-handoff.sh, and handoff-db.sh need chmod +x in justfile
+    or a post-install hook so they are executable after reinstall.
+  files:
+  - justfile
+  extra: []
 log:
+- date: 2026-04-13
+  summary: |
+    Completed .ctx/ HANDOFF migration (atelier-11), separated handup/handdown concerns with
+    HANDUP.json handoff and absolute paths (atelier-12); pushed 7e57557/0214fcc; reinstalled.
+  commits:
+  - 0a4fcd2
+  - 477a5a6
+  - 2432c98
+  - 7e57557
+  - 0214fcc
 - date: 2026-04-13
   summary: |
     Merged remote changes (13 commits ahead); resolved conflicts taking remote; fixed B3
@@ -218,9 +293,3 @@ log:
   summary: Renamed plugin joe-dev → atelier — dirs, plugin.json, README, skills, HANDOFFs
   commits:
   - f326409
-- date: 2026-04-03
-  summary: Built full plugin from scratch — 8 skills, 5 agents, published to GitHub
-  commits:
-  - 6266292
-  - 6454b01
-  - ab19dbb
