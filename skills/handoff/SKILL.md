@@ -89,11 +89,11 @@ Omit the field if empty.
 
 ### 6. Sync to SQLite
 
-Resolve and run `handoff-db.sh` from the plugin cache:
+Resolve and run `handoff-db.sh` from the plugin install location:
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/handoff-db.sh \
-  2>/dev/null | sort -V | tail -1)
+ATELIER_ROOT=$(python3 -c "import json,os; m=json.load(open(os.path.expanduser('~/.claude/plugins/known_marketplaces.json'))); print(m.get('atelier',{}).get('installLocation',''))")
+SCRIPT="$ATELIER_ROOT/skills/handoff/scripts/handoff-db.sh"
 bash "$SCRIPT" upsert --project <project> --handoff <path-to-HANDOFF.yaml>
 ```
 
@@ -140,8 +140,8 @@ Add or update if not present. This pattern ignores all `.ctx/` contents except H
 Before writing, check if the HANDOFF file is still at the repo root. If so, migrate it first:
 
 ```bash
-SCRIPT=$(ls $HOME/.claude/plugins/cache/local/atelier/*/skills/handoff/scripts/migrate-handoff.sh \
-  2>/dev/null | sort -V | tail -1)
+ATELIER_ROOT=$(python3 -c "import json,os; m=json.load(open(os.path.expanduser('~/.claude/plugins/known_marketplaces.json'))); print(m.get('atelier',{}).get('installLocation',''))")
+SCRIPT="$ATELIER_ROOT/skills/handoff/scripts/migrate-handoff.sh"
 bash "$SCRIPT" <repo-root> <old-root-path>
 ```
 
