@@ -1,16 +1,17 @@
 ---
 name: handon
 description:
-  Use at the start of a session to orient to outstanding work — scans for
-  HANDOFF.yaml (or HANDOFF.md) files, triages items by priority, and acts according to
-  risk level without asking for approval on P1/P2 work.
+  Use at the start of a session to triage and execute outstanding work in the current
+  git repo. Reads the repo's HANDOFF.yaml, triages items by priority, and acts according
+  to risk level without asking for approval on P1/P2 work. Single-repo only — use
+  handup to survey nested or multi-project handoffs first.
 ---
 
 # handon — Session-Start Handoff Reader
 
 ## Overview
 
-Scan the current directory tree for handoff files, parse items by priority, and act:
+Find the current repo's HANDOFF file, parse items by priority, and act:
 
 | Priority | Action                                                                            |
 | -------- | --------------------------------------------------------------------------------- |
@@ -32,8 +33,8 @@ handoff-detect          # returns path if exists, expected path + exit 2 if not
 
 If `handoff-detect` is not on PATH, fall back to globbing the repo root for `HANDOFF.*.yaml`.
 
-If invoked from a workspace root (e.g. `~/dev`) with no `.git`, sweep subdirs for
-`HANDOFF.*.*.yaml` files instead.
+If not inside a git repo (no `.git` found walking up from cwd), stop and report:
+"Not in a git repo. Use `/atelier:handup` to survey nested projects from here."
 
 If only a legacy `HANDOFF.md` exists at repo root, read it as freeform. Do not convert unless
 asked.

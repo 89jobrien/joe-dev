@@ -1,26 +1,24 @@
 ---
 name: herald
-description: Use this agent to synthesize cross-project activity into an Obsidian daily note,
-  generate cross-repo narrative summaries, or consolidate work from multiple repos. Examples:
+description: Use this agent to synthesize cross-project activity into an Obsidian daily note, generate cross-repo narrative summaries, or consolidate work from multiple repos.
+examples: |
+  <example>
+  Context: End of a work session across multiple repos.
+  user: "Synthesize today's session into my daily note"
+  assistant: "I'll use herald to synthesize the cross-project activity."
+  <commentary>
+  End-of-session cross-repo synthesis is herald's primary use case.
+  </commentary>
+  </example>
 
-<example>
-Context: End of a work session across multiple repos.
-user: "Synthesize today's session into my daily note"
-assistant: "I'll use herald to synthesize the cross-project activity."
-<commentary>
-End-of-session cross-repo synthesis is herald's primary use case.
-</commentary>
-</example>
-
-<example>
-Context: User wants a narrative summary of what changed.
-user: "What happened across all repos this week?"
-assistant: "I'll run herald to generate a cross-repo summary."
-<commentary>
-Cross-project narrative summarization triggers herald.
-</commentary>
-</example>
-
+  <example>
+  Context: User wants a narrative summary of what changed.
+  user: "What happened across all repos this week?"
+  assistant: "I'll run herald to generate a cross-repo summary."
+  <commentary>
+  Cross-project narrative summarization triggers herald.
+  </commentary>
+  </example>
 model: inherit
 color: green
 tools: ["Read", "Write", "Bash"]
