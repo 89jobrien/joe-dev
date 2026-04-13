@@ -92,7 +92,8 @@ Keep prose minimal. No headers longer than 3 words. No HTML. No emoji.
 ## Mermaid Diagrams
 
 Prefer `generate-diagrams.nu` (faster, no deps); fall back to `generate-diagrams.py` if nu
-is not available. Resolve the highest installed version at runtime:
+is not available. Scripts live in the plugin's `skills/handover/scripts/` directory — resolve
+via `known_marketplaces.json`:
 
 ```bash
 ATELIER_ROOT=$(python3 -c "import json,os; m=json.load(open(os.path.expanduser('~/.claude/plugins/known_marketplaces.json'))); print(m.get('atelier',{}).get('installLocation',''))")

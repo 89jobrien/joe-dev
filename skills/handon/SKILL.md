@@ -65,9 +65,7 @@ Before parsing the local file, check the local SQLite database for status overri
 outside this session (e.g. by another tool or a manual update):
 
 ```bash
-ATELIER_ROOT=$(python3 -c "import json,os; m=json.load(open(os.path.expanduser('~/.claude/plugins/known_marketplaces.json'))); print(m.get('atelier',{}).get('installLocation',''))")
-SCRIPT="$ATELIER_ROOT/skills/handoff/scripts/handoff-db.sh"
-bash "$SCRIPT" query --project <project> 2>/dev/null
+handoff-db query --project <project> 2>/dev/null
 ```
 
 For each row returned, if the SQLite `status` differs from the YAML `status`, prefer SQLite and
