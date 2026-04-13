@@ -27,7 +27,7 @@ init:
 
     # 4. Install / reinstall plugin
     claude plugin uninstall atelier --force 2>/dev/null || true
-    claude plugin install atelier@atelier
+    claude plugin install atelier@local
     echo "    plugin: atelier installed"
 
     echo ""
@@ -39,5 +39,5 @@ reinstall:
     #!/usr/bin/env bash
     claude plugin marketplace update atelier 2>/dev/null || true
     claude plugin uninstall atelier --force 2>/dev/null || true
-    claude plugin install atelier@atelier
+    claude plugin install atelier@local
     echo "[atelier] reinstalled — restart Claude Code to apply"
