@@ -36,8 +36,8 @@ sequentially without further clarification.
 
 ## Rust Work
 
-Before analyzing or planning any Rust code changes, invoke the `writing-solid-rust` skill.
-This ensures your task plans reflect idiomatic Rust patterns and avoid directing the
+Before analyzing or planning any Rust code changes, invoke the `superpowers:writing-solid-rust`
+skill. This ensures your task plans reflect idiomatic Rust patterns and avoid directing the
 implementer toward poor approaches.
 
 ## Behavior

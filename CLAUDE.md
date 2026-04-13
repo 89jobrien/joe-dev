@@ -59,6 +59,11 @@ All agents are thin wrappers — domain logic lives in `devkit`. Do not embed be
 | `conductor` | devloop → doob → devkit workflow pipeline                    |
 | `oxidizer`  | Rust-specific review (clippy, unsafe, edition 2024)          |
 
+**Agent Permissions:**
+
+- `forge` and `conductor` have `permissionMode: acceptEdits` — they can write/edit files without
+  prompting. All other agents operate read-only and prompt before file changes.
+
 ## Handoff System
 
 Three-file model per project:
