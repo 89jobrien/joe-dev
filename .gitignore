@@ -17,3 +17,4 @@ skills/*/scripts/test_*.py
 *~
 *.log
 *.tmp
+.ctx/HANDOVER.md

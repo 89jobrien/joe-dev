@@ -60,7 +60,7 @@ def infer_dependencies [items: list<any>]: nothing -> record {
     # Build issue-number → item-id index from titles and descriptions
     let issue_to_id = (
         $items | reduce --fold {} { |item, acc|
-            let text = ($item | get -i title | default '') + ' ' + ($item | get -i description | default '')
+            let text = ($item | get -o title | default '') + ' ' + ($item | get -o description | default '')
             let parsed = ($text | parse --regex '#(\d+)')
             if ($parsed | is-empty) {
                 $acc
@@ -72,16 +72,16 @@ def infer_dependencies [items: list<any>]: nothing -> record {
 
     $items | reduce --fold {} { |item, acc|
         let item_id = $item.id
-        let explicit = ($item | get -i depends_on | default [] | each { |d| $d | into string })
+        let explicit = ($item | get -o depends_on | default [] | each { |d| $d | into string })
 
         let from_notes = (
-            $item | get -i extra | default [] | each { |ex|
-                let note = ($ex | get -i note | default '')
-                let refs = ($note | parse --regex '(?i)depends on ([\w]+-\d+|#\d+)' | get -i capture1 | default [])
+            $item | get -o extra | default [] | each { |ex|
+                let note = ($ex | get -o note | default '')
+                let refs = ($note | parse --regex '(?i)depends on ([\w]+-\d+|#\d+)' | get -o capture1 | default [])
                 $refs | each { |ref|
                     if ($ref | str starts-with '#') {
                         let num = ($ref | str substring 1..)
-                        $issue_to_id | get -i $num | default null
+                        $issue_to_id | get -o $num | default null
                     } else {
                         $ref
                     }
@@ -112,8 +112,8 @@ def diagram_dependency [items: list<any>, deps: record]: nothing -> string {
     let id_to_item = ($items | reduce --fold {} { |item, acc| $acc | insert $item.id $item })
 
     let nodes = ($items | where { |item| $item.id in $in_graph } | each { |item|
-        let label = (abbrev ($item | get -i title | default $item.id))
-        let status = ($item | get -i status | default 'open')
+        let label = (abbrev ($item | get -o title | default $item.id))
+        let status = ($item | get -o status | default 'open')
         let nid = (node_id $item.id)
         match $status {
             'blocked' => $"  ($nid)[\"($label)\"]:::blocked",
@@ -149,10 +149,10 @@ def diagram_dependency [items: list<any>, deps: record]: nothing -> string {
 def diagram_burn [items: list<any>]: nothing -> string {
     if ($items | length) < 3 { return '' }
 
-    let counts = ($items | group-by { |item| $item | get -i status | default 'open' })
+    let counts = ($items | group-by { |item| $item | get -o status | default 'open' })
 
     let slices = (['done', 'open', 'blocked', 'parked'] | each { |s|
-        let n = ($counts | get -i $s | default [] | length)
+        let n = ($counts | get -o $s | default [] | length)
         if $n > 0 { $"  \"($s)\" : ($n)" }
     } | compact)
 
@@ -170,10 +170,10 @@ def diagram_velocity [log_entries: list<any>, items: list<any>]: nothing -> stri
 
     let completed_by_date = (
         $items
-        | where { |item| ($item | get -i completed | default null) != null }
+        | where { |item| ($item | get -o completed | default null) != null }
         | reduce --fold {} { |item, acc|
             let d = ($item.completed | into string)
-            let n = ($acc | get -i $d | default 0)
+            let n = ($acc | get -o $d | default 0)
             $acc | upsert $d ($n + 1)
         }
     )
@@ -182,14 +182,14 @@ def diagram_velocity [log_entries: list<any>, items: list<any>]: nothing -> stri
 
     let log_dates = (
         $log_entries
-        | each { |e| $e | get -i date | default null }
+        | each { |e| $e | get -o date | default null }
         | compact
         | each { |d| $d | into string }
         | uniq
         | sort
     )
 
-    let counts = ($log_dates | each { |d| $completed_by_date | get -i $d | default 0 })
+    let counts = ($log_dates | each { |d| $completed_by_date | get -o $d | default 0 })
     let max_count = ($counts | math max)
 
     if $max_count == 0 { return '' }
@@ -208,12 +208,12 @@ def diagram_velocity [log_entries: list<any>, items: list<any>]: nothing -> stri
 }
 
 # ---------------------------------------------------------------------------
-# Diagram: hotspots (xychart-beta bar)
+# Diagram: hotspots (block-beta labeled grid)
 # ---------------------------------------------------------------------------
 
-def diagram_file_hotspots [items: list<any>, top_n: int = 8]: nothing -> string {
+def diagram_file_hotspots [items: list<any>, top_n: int = 9, cols: int = 3]: nothing -> string {
     let items_with_files = ($items | where { |item|
-        let f = ($item | get -i files | default null)
+        let f = ($item | get -o files | default null)
         $f != null and ($f | length) > 0
     })
 
@@ -226,7 +226,7 @@ def diagram_file_hotspots [items: list<any>, top_n: int = 8]: nothing -> string 
         $items_with_files | reduce --fold {} { |item, acc|
             let files = ($item.files | uniq)
             $files | reduce --fold $acc { |f, a|
-                let n = ($a | get -i $f | default 0)
+                let n = ($a | get -o $f | default 0)
                 $a | upsert $f ($n + 1)
             }
         }
@@ -240,19 +240,20 @@ def diagram_file_hotspots [items: list<any>, top_n: int = 8]: nothing -> string 
     )
 
     let all_path_keys = ($file_item_count | columns)
-    let labels = ($top | each { |row| $"\"(file_display_name $row.key $all_path_keys)\"" } | str join ', ')
-    let counts = ($top | each { |row| $row.val })
-    let max_count = ($counts | math max)
+
+    # Build block cells: ID["label\n×count"]
+    let cells = ($top | enumerate | each { |row|
+        let label = (file_display_name $row.item.key $all_path_keys)
+        let count = $row.item.val
+        let id = $"f($row.index)"
+        $"  ($id)[\"($label)\\n×($count)\"]"
+    })
 
     [
         '```mermaid'
-        'xychart-beta'
-        '  title "File Hotspots"'
-        $"  x-axis [($labels)]"
-        $"  y-axis \"Items\" 0 --> ($max_count)"
-        $"  bar ($counts)"
-        '```'
-    ] | str join "\n"
+        'block-beta'
+        $"  columns ($cols)"
+    ] ++ $cells ++ [ '```' ] | str join "\n"
 }
 
 # ---------------------------------------------------------------------------
@@ -262,21 +263,21 @@ def diagram_file_hotspots [items: list<any>, top_n: int = 8]: nothing -> string 
 def diagram_blocked_chain [items: list<any>, deps: record]: nothing -> string {
     let blocked_ids = (
         $items
-        | where { |item| ($item | get -i status | default '') == 'blocked' }
+        | where { |item| ($item | get -o status | default '') == 'blocked' }
         | each { |item| $item.id }
     )
 
     if ($blocked_ids | is-empty) { return '' }
 
-    let dep_of_blocked = ($blocked_ids | each { |iid| $deps | get -i $iid | default [] } | flatten)
+    let dep_of_blocked = ($blocked_ids | each { |iid| $deps | get -o $iid | default [] } | flatten)
     let chain_ids = ($blocked_ids ++ $dep_of_blocked | uniq)
 
     let dep_cols = ($deps | columns)
     let root_blockers = (
         $items | where { |item|
-            ($item | get -i status | default '') == 'blocked'
-            and ($item | get -i extra | default [] | any { |ex|
-                ($ex | get -i type | default '') == 'blocker'
+            ($item | get -o status | default '') == 'blocked'
+            and ($item | get -o extra | default [] | any { |ex|
+                ($ex | get -o type | default '') == 'blocker'
             })
             and not ($item.id in $dep_cols)
         } | each { |item| $item.id }
@@ -288,9 +289,9 @@ def diagram_blocked_chain [items: list<any>, deps: record]: nothing -> string {
     let id_to_item = ($items | reduce --fold {} { |item, acc| $acc | insert $item.id $item })
 
     let nodes = ($all_chain | each { |iid|
-        let item = ($id_to_item | get -i $iid | default {})
-        let label = (abbrev ($item | get -i title | default $iid))
-        let status = ($item | get -i status | default 'open')
+        let item = ($id_to_item | get -o $iid | default {})
+        let label = (abbrev ($item | get -o title | default $iid))
+        let status = ($item | get -o status | default 'open')
         let nid = (node_id $iid)
         if ($iid in $root_blockers) and ($status == 'blocked') {
             $"  ($nid)[\"($label)\"]:::root_blocker"
@@ -302,7 +303,7 @@ def diagram_blocked_chain [items: list<any>, deps: record]: nothing -> string {
     })
 
     let dep_edges = ($all_chain | each { |iid|
-        $deps | get -i $iid | default [] | each { |dep|
+        $deps | get -o $iid | default [] | each { |dep|
             if $dep in $all_chain {
                 $"  (node_id $dep) --> (node_id $iid)"
             }
@@ -311,7 +312,7 @@ def diagram_blocked_chain [items: list<any>, deps: record]: nothing -> string {
 
     let dotted_edges = (
         $blocked_ids | where { |iid| not ($iid in $root_blockers) } | each { |iid|
-            let has_dep = ($deps | get -i $iid | default [] | any { |dep| $dep in $all_chain })
+            let has_dep = ($deps | get -o $iid | default [] | any { |dep| $dep in $all_chain })
             if not $has_dep {
                 $root_blockers | each { |rb| $"  (node_id $rb) -.-> (node_id $iid)" }
             }
@@ -352,14 +353,14 @@ def main [
     }
 
     let data = (open --raw $path | from yaml)
-    let items = ($data | get -i items | default [])
+    let items = ($data | get -o items | default [])
 
     if ($items | is-empty) {
         print --stderr 'error: no items found in HANDOFF file'
         exit 1
     }
 
-    let log_entries = ($data | get -i log | default [])
+    let log_entries = ($data | get -o log | default [])
     let deps = (infer_dependencies $items)
 
     let all_diagrams = ['dependency', 'burn', 'velocity', 'hotspots', 'blocked']
