@@ -88,19 +88,24 @@ Extend freely with project-specific facts (e.g. `rust_edition`, `open_prs`, `las
 
 ## File Layout
 
-| File                                   | Location | Committed | Purpose                 |
-| -------------------------------------- | -------- | --------- | ----------------------- |
-| `.ctx/HANDOFF.<project>.<base>.yaml`   | `.ctx/`  | yes       | Tasks, items, log       |
-| `.ctx/HANDOFF.state.yaml`              | `.ctx/`  | no        | Project snapshot        |
-| `.ctx/HANDOFF.md`                      | `.ctx/`  | no        | Generated reference doc |
+| File                                         | Location | Committed | Purpose                        |
+| -------------------------------------------- | -------- | --------- | ------------------------------ |
+| `.ctx/HANDOFF.<project>.<base>.yaml`         | `.ctx/`  | yes       | Tasks, items, log              |
+| `.ctx/HANDOFF.state.yaml`                    | `.ctx/`  | no        | Project snapshot               |
+| `.ctx/HANDOFF.md`                            | `.ctx/`  | no        | Generated reference doc        |
+| `.ctx/handoff.<project>.config.toml`         | `.ctx/`  | no        | Local runtime vars (user-owned)|
+| `.ctx/handoff.<project>.config.toml.example` | `.ctx/`  | yes       | Committed template for config  |
 
 `.gitignore` must contain:
 ```
 .ctx/*
 !.ctx/HANDOFF.*.yaml
+!.ctx/HANDOFF.*.*.yaml
+!.ctx/handoff.*.config.toml.example
 ```
 
-This ignores all `.ctx/` contents while un-ignoring committed HANDOFF files.
+This ignores all `.ctx/` contents while un-ignoring committed HANDOFF files and the config example.
+The real `handoff.*.config.toml` stays gitignored — it is machine-local and user-owned.
 
 ## Naming Convention
 

@@ -25,6 +25,18 @@ Scan the current directory tree for handoff files, parse items by priority, and 
 
 ## Steps
 
+### 0. Load local config
+
+Look for `.ctx/handoff.<repo>.config.toml` in the repo root (where `<repo>` is the directory
+name). If found, read it and make all `[vars]` entries available as session variables for the
+remainder of this skill's execution. If absent, continue — config is optional.
+
+If the file does not exist but `.ctx/handoff.<repo>.config.toml.example` does, note it once:
+"No local config found. Copy `.ctx/handoff.<repo>.config.toml.example` to
+`.ctx/handoff.<repo>.config.toml` and fill in your values."
+
+Do not error or stop if config is missing.
+
 ### 1. Find handoff file
 
 ```bash
