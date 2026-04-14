@@ -10,10 +10,11 @@ description:
 
 ## Overview
 
-`handup` is a read-only orientation tool. It sweeps cwd and all subdirectories for
-signals of outstanding work, groups them by project, and renders a prioritized summary.
-It does **not** execute, commit, or modify anything. The output tells you where to go
-next; `handon` is how you get there.
+`handup` is an orientation tool. It sweeps cwd and all subdirectories for signals of
+outstanding work, groups them by project, and renders a prioritized summary. It writes
+findings to `~/.ctx/handoffs/` and checkpoints to a SQLite db — it does not touch your
+repos, commit anything, or run builds. The output tells you where to go next; `handon`
+is how you get there.
 
 ## Steps
 
@@ -69,10 +70,9 @@ Branch: <branch> | Build: <build> | Tests: <tests>   (omit if .ctx absent)
 
 Sort projects: those with P0 items first, then by P1 count descending.
 
-### 5. Write .ctx/HANDUP.json
+### 5. Write HANDUP.json
 
-Write findings to `$CWD/.ctx/HANDUP.json`. Create `$CWD/.ctx/` if it does not exist.
-This file is gitignored (covered by `.ctx/*`) — do not commit it.
+Write findings to `~/.ctx/handoffs/<basename-of-cwd>/HANDUP.json`. Create the directory if it does not exist.
 
 Schema:
 
@@ -101,7 +101,29 @@ Schema:
 
 Overwrite any existing `HANDUP.json` from a prior run.
 
-### 6. Render summary
+### 6. Checkpoint to SQLite
+
+Upsert a checkpoint row into `~/.ctx/handoffs/handup.db`:
+
+```bash
+! sqlite3 ~/.ctx/handoffs/handup.db "
+  CREATE TABLE IF NOT EXISTS checkpoints (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    project TEXT NOT NULL,
+    cwd TEXT NOT NULL,
+    generated TEXT NOT NULL,
+    recommendation TEXT,
+    json_path TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+  INSERT INTO checkpoints (project, cwd, generated, recommendation, json_path)
+  VALUES ('<basename>', '<cwd>', '<YYYY-MM-DD>', '<recommendation.reason>', '~/.ctx/handoffs/<basename>/HANDUP.json');
+"
+```
+
+This preserves a timestamped history of every handup run across sessions.
+
+### 7. Render summary
 
 Output the full survey, then a recommendation block:
 
@@ -116,14 +138,14 @@ Output the full survey, then a recommendation block:
 Highest urgency: <project> — <reason> (e.g. "1 P0 item: broken build")
 Suggested: cd <absolute-path> && /atelier:handon
 
-Findings written to: <cwd>/.ctx/HANDUP.json
+Findings written to: ~/.ctx/handoffs/<basename>/HANDUP.json — checkpointed to ~/.ctx/handoffs/handup.db
 ```
 
 If cwd is itself a git repo with a HANDOFF.yaml, include it first as "current project"
 before sweeping subdirs.
 
 If nothing is found anywhere: report "No open handoff items or TODO markers found under
-`<cwd>`." and stop (still write an empty `HANDUP.json` with `"projects": []`).
+`<cwd>`." and stop (still write an empty `HANDUP.json` with `"projects": []` and checkpoint the run).
 
 ## Edge Cases
 

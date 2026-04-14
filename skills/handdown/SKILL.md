@@ -38,7 +38,8 @@ It only appends `extra` entries and `log` entries.
 
 ```bash
 CWD=$(pwd)
-HANDUP="$CWD/.ctx/HANDUP.json"
+BASENAME=$(basename "$CWD")
+HANDUP="$HOME/.ctx/handoffs/$BASENAME/HANDUP.json"
 ```
 
 Use `$CWD` as the absolute base for all paths. Never use relative paths.
