@@ -24,13 +24,17 @@ change — no manual step needed after edits.
 ```
 atelier/
 ├── .claude-plugin/plugin.json   # Plugin manifest (name, version, skills, agents)
-├── skills/                      # 10 skills — procedural markdown guides for Claude
+├── skills/                      # 12 skills — procedural markdown guides for Claude
 ├── agents/                      # 5 agents — thin wrappers that delegate to devkit
+├── bin/                         # handoff-detect, handoff-init, handoff-db, migrate-handoff
 ├── docs/design.md               # Authoritative design spec
 └── justfile                     # Setup automation
 ```
 
-### Skills (11)
+`bin/` is added to PATH automatically by Claude Code when the plugin is installed. Scripts there
+are callable directly: `handoff-detect`, `handoff-init`, `handoff-db`, `migrate-handoff`.
+
+### Skills (12)
 
 | Skill                | Trigger examples                                                     |
 | -------------------- | -------------------------------------------------------------------- |
@@ -68,11 +72,15 @@ All agents are thin wrappers — domain logic lives in `devkit`. Do not embed be
 
 Three-file model per project:
 
-| File                                            | Committed | Purpose                                        |
-| ----------------------------------------------- | --------- | ---------------------------------------------- |
-| `.ctx/HANDOFF.<project>.<base>.yaml` (in `.ctx/`) | YES     | Source of truth — tasks, log, metadata         |
-| `.ctx/HANDOFF.state.yaml`                       | NO        | Project snapshot (branch, build status, tests) |
-| `.ctx/HANDOFF.md`                               | NO        | Rendered human-readable reference              |
+| File                                              | Committed | Purpose                                        |
+| ------------------------------------------------- | --------- | ---------------------------------------------- |
+| `.ctx/HANDOFF.<name>.<base>.yaml` (in `.ctx/`)   | YES       | Source of truth — tasks, log, metadata         |
+| `.ctx/HANDOFF.<name>.<base>.state.yaml`           | NO        | Project snapshot (branch, build status, tests) |
+| `.ctx/HANDOFF.md`                                 | NO        | Rendered human-readable reference              |
+
+`<name>` is derived from the nearest `Cargo.toml`/`pyproject.toml`/`go.mod`; `<base>` is the
+repo root directory name. `handoff-init` creates stubs and manages the `.gitignore` block on
+first use — it runs lazily via `handoff-detect` and never needs to be called directly.
 
 Items have immutable `id`/`title`/`description`/`priority` (P0/P1/P2) and mutable `status`
 (open/done/parked/blocked). The log section prepends newest-first. Items also sync to
@@ -104,9 +112,9 @@ per machine before any `@bazaar` install: `claude plugin marketplace add https:/
 ## Session Flow
 
 1. Session starts → `sanctum` validates 1Password auth, traces `.envrc`
-2. `sanctum` hands off to `atelier:handon` → triages `HANDOFF.yaml` by priority
+2. `sanctum` hands off to `atelier:handon` → triages `.ctx/HANDOFF.<name>.<base>.yaml` by priority
 3. Work happens using skills (`cargo-gate`, `git-guard`, `ci-assist`, etc.)
-4. Session ends → `project-pulse` captures state snapshot → `handoff` writes `HANDOFF.yaml` + `.ctx/`
+4. Session ends → `project-pulse` captures state snapshot → `handoff` writes `.ctx/HANDOFF` files
 
 ## Adding or Editing Skills
 
