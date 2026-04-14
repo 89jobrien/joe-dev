@@ -283,6 +283,15 @@ items:
 log:
 - date: 2026-04-13
   summary: >
+    Replaced devloop dependency in all 4 agents (conductor, forge, herald, sentinel) with
+    devkit equivalents (devkit council/health/standup/ci-triage). Synced dotfiles and atelier
+    in both directions — dotfiles was canonical, atelier had stale relay stubs. Wired
+    ~/.secrets with op://cli/Anthropic API Key/ANTHROPIC_API_KEY for devkit. Verified
+    devkit health runs against doob (78/100).
+  commits:
+  - 36c2436
+- date: 2026-04-13
+  summary: >
     Pulled 23 remote commits (bazaar marketplace, bin/ scripts, atelier-14/15 done); resolved
     plugin.json and HANDOFF conflicts; added pre-push version-stamp hooks to sanctum and
     orca-strait; switched both to @bazaar install; fixed global pre-commit cmd/**+internal/**
