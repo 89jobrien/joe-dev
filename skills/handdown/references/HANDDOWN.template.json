@@ -1,0 +1,50 @@
+{
+  "handdown_report": {
+    "_description": "Output format for the handdown analysis summary (Step 9). Render this as markdown, not JSON.",
+    "header": "## handdown — {cwd} ({date})",
+    "projects": [
+      {
+        "_description": "One block per project inspected. Include ALL projects — updated and skipped.",
+        "name": "{project-name}",
+        "annotations": [
+          {
+            "item_id": "{item-id}",
+            "type": "discovery | escalation | note",
+            "note": "{first sentence of the extra note, max 100 chars}"
+          }
+        ],
+        "committed": "{short-hash or null}",
+        "skipped": false,
+        "_skipped_example": {
+          "name": "{project-name}",
+          "annotations": [],
+          "committed": null,
+          "skipped": true,
+          "skip_reason": "no new context — existing extras already current"
+        }
+      }
+    ],
+    "footer": "{N} project(s) updated, {M} item(s) annotated."
+  },
+  "field_reference": {
+    "cwd": "Absolute path passed as base directory (e.g. /Users/joe/dev)",
+    "date": "ISO date of the handdown run (YYYY-MM-DD)",
+    "project-name": "Value of the project: field in the HANDOFF.yaml",
+    "item-id": "The id field of the annotated item (e.g. rascal-2, gap-001)",
+    "type": {
+      "discovery": "Cross-project dependency or unblocking relationship newly identified",
+      "escalation": "Item identified as highest-priority in cross-project analysis",
+      "note": "General analysis context — confirmed blocker, recommended next, caveat"
+    },
+    "note": "First sentence of the extra.note written in step 4. Truncate at 100 chars with '…' if longer.",
+    "committed": "Short git hash (7 chars) from the commit in step 8. Null/omitted if commit was skipped.",
+    "skipped": "true if the project was inspected but received zero new annotations",
+    "skip_reason": "Human-readable explanation — always 'no new context — existing extras already current' unless another reason applies",
+    "N": "Count of projects with at least one new extra entry written",
+    "M": "Total count of new extra entries written across all projects"
+  },
+  "rendered_example": {
+    "_description": "What the markdown output looks like for a real run.",
+    "_output": "## handdown — /Users/joe/dev (2026-04-13)\n\n### rascal\n- [rascal-2] discovery: Unblocks rascal-4 and fmtx-2 — last prerequisite before rascal↔fmtx integration\n- [rascal-4] discovery: Unblocks fmtx-2 in fmtx — cross-project pair, close together\n  Committed: 7f50174\n\n### fmtx\n- [fmtx-2] discovery: Depends on rascal-2 → rascal-4 → fmtx-2 chain; order now documented\n  Committed: 137a48b\n\n### sanctum\n- [joe-sec-1] discovery: Depends on joe-sec-2 (binary) — can't install until binary is built\n- [joe-sec-2] discovery: Unblocks joe-sec-1 — correct starting point\n  Committed: d7d2014\n\n### hooksmith\n- [gap-001] discovery: Depends on gap-002 (real LLM) — integration tests premature without it\n- [gap-002] escalation: Logical first step; unblocks gap-001 and makes the tool functionally complete\n  Committed: 5cb9688\n\n### minibox\n  (no new context — skipped)\n\n### devkit\n  (no new context — skipped)\n\n### atelier\n  (no new context — skipped)\n\n---\n4 project(s) updated, 7 item(s) annotated."
+  }
+}

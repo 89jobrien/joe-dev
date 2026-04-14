@@ -168,14 +168,15 @@ repo's commit — do not block the others.
 
 ### 9. Render summary
 
-After all writes and commits, output:
+After all writes and commits, output a structured report following the format in
+`references/HANDDOWN.template.json`. The rendered form is:
 
-```text
+```
 ## handdown — <cwd> (<date>)
 
 ### <project-name>
-  [<item-id>] <type>: <one-line note>
-  ...
+- [<item-id>] <type>: <one-line note>
+- [<item-id>] <type>: <one-line note>
   Committed: <short-hash>
 
 ### <project-name>
@@ -184,6 +185,18 @@ After all writes and commits, output:
 ---
 <N> project(s) updated, <M> item(s) annotated.
 ```
+
+**Field rules:**
+
+- **project-name**: the `project:` field from the HANDOFF.yaml
+- **item-id**: the item's `id` field, e.g. `rascal-2`
+- **type**: one of `discovery`, `escalation`, or `note` — matches the `type` written to `extra`
+- **one-line note**: first sentence of the `note` field (truncate at 100 chars if needed)
+- **Committed**: short git hash from the commit made in step 8; omit the line if commit was skipped
+- **skipped projects**: list every project that was inspected but received no new annotations —
+  do not silently omit them, as "skipped" is useful signal that the context is already current
+- **footer**: always include `<N> project(s) updated, <M> item(s) annotated` where N counts
+  repos with at least one write and M counts the total number of new `extra` entries written
 
 ## Immutability Rules
 
