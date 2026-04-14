@@ -232,43 +232,42 @@ items:
 - id: atelier-13
   name: propagate-ctx-handoff-to-other-repos
   priority: P2
-  status: done
+  status: open
   title: Propagate .ctx/HANDOFF naming convention to other repos
   description: |
-    Now that atelier uses .ctx/HANDOFF.<project>.workspace.yaml, other repos with root-level
-    HANDOFF files need migration. handoff-detect.sh auto-migrates on first use via
-    migrate-handoff.sh. Priority repos: minibox, devloop, doob, braid.
+    handoff-init + handoff-detect now handle auto-migration and gitignore management.
+    Run `handoff-detect --init` in each priority repo to trigger init: minibox, devloop,
+    doob, braid. Any root-level HANDOFF.*.yaml will be auto-renamed to the new convention.
   files: []
   extra: []
-  completed: 2026-04-13
 - id: atelier-16
-  name: handoff-detect-ctx-search
+  name: handoff-naming-convention-v2
   priority: P1
-  status: open
-  title: Update handoff-detect to search .ctx/ first
+  status: done
+  title: Implement HANDOFF.<name>.<base> naming convention with handoff-init
   description: |
-    handoff-detect (bin/handoff-detect) only searches the repo root for HANDOFF.*.yaml.
-    Since atelier-11 moved all HANDOFF files into .ctx/, it returns exit 2 for any repo
-    that has completed the migration. Fix: search .ctx/ for HANDOFF.*.workspace.yaml and
-    HANDOFF.*.*.yaml before falling back to root. Update --name/--root/--project flags
-    to remain consistent with new paths.
+    Replaced workspace sentinel with repo-root dir name as <base>. Added handoff-init
+    script that scans Cargo.toml/pyproject.toml/go.mod for package names, creates
+    HANDOFF.<name>.<base>.state.yaml stubs per package, maintains # handoff-begin /
+    # handoff-end block in .gitignore, and stamps .ctx/.initialized token. handoff-detect
+    now calls handoff-init lazily on missing token, derives <name> from nearest manifest.
+    migrate-handoff updated to use basename $REPO_ROOT for <base>. Stale scripts/ copies
+    removed. All SKILL.md files updated. Global pre-commit exclusion updated to
+    **/.ctx/HANDOFF.*.*.yaml. Atelier HANDOFF file renamed accordingly.
   files:
+  - bin/handoff-init
   - bin/handoff-detect
+  - bin/migrate-handoff
+  - skills/handoff/references/schema.md
+  - skills/handoff/SKILL.md
+  - skills/handon/SKILL.md
+  - skills/handup/SKILL.md
+  - skills/handdown/SKILL.md
+  - skills/handover/SKILL.md
+  - .gitignore
+  - /Users/joe/.config/git/hooks/pre-commit
   extra: []
-- id: atelier-17
-  name: ctx-config-convention-pending-repos
-  priority: P2
-  status: open
-  title: Land config.toml.example in crux and devloop (pre-commit failures)
-  description: |
-    Two repos were skipped during the workspace-wide config convention propagation due to
-    pre-existing hook failures unrelated to the change:
-    - crux: fmt failure in tools/secrets-scan/src/main.rs (import ordering)
-    - devloop: clippy failure in examples/analyze-real-session.rs (missing tokio dep in
-      [dev-dependencies] for devloop-baml example target)
-    Fix each underlying issue, then land the handoff.$repo.config.toml.example commit.
-  files: []
-  extra: []
+  completed: 2026-04-14
 - id: atelier-14
   name: chmod-handoff-scripts-in-install
   priority: P2
@@ -311,29 +310,13 @@ items:
 log:
 - date: 2026-04-14
   summary: >
-    Completed full workspace .ctx/HANDOFF migration (atelier-13): 8 repos migrated, fmtx/rascal/slash
-    renamed to add .workspace suffix. Added .ctx/handoff.<repo>.config.toml convention — handon step 0
-    loads it, schema.md updated, example committed. Propagated to all 26 repos (crux and devloop skipped:
-    pre-existing hook failures). handoff-detect stale (atelier-16 opened). devloop-baml example tokio dep
-    and crux import ordering tracked in atelier-17.
+    Implemented HANDOFF.<name>.<base> naming convention (atelier-16): added handoff-init,
+    updated handoff-detect for lazy init + manifest-derived names, updated migrate-handoff,
+    removed stale skills/handoff/scripts/ copies, updated all SKILL.md state file refs,
+    fixed global pre-commit exclusion. Renamed .ctx/ HANDOFF to new convention.
   commits:
-  - 9a19b30
-  - e19db7d
-- date: 2026-04-13
-  summary: >
-    atelier-13 done — migrated 7 repos (devkit, fmtx, minibox, rascal, slash, hooksmith,
-    sanctum) from root-level HANDOFF files to .ctx/HANDOFF.<project>.workspace.yaml convention.
-    Added !.ctx/HANDOFF.*.yaml gitignore exceptions in each. hooksmith HANDOFF.yaml also
-    renamed to apply strict naming convention.
-- date: 2026-04-13
-  summary: >
-    Replaced devloop dependency in all 4 agents (conductor, forge, herald, sentinel) with
-    devkit equivalents (devkit council/health/standup/ci-triage). Synced dotfiles and atelier
-    in both directions — dotfiles was canonical, atelier had stale relay stubs. Wired
-    ~/.secrets with op://cli/Anthropic API Key/ANTHROPIC_API_KEY for devkit. Verified
-    devkit health runs against doob (78/100).
-  commits:
-  - 36c2436
+  - c68b72d
+  - 9f7f24e
 - date: 2026-04-13
   summary: >
     Resolved atelier-10 (7 sentinel suggestions + 5 observations). Fixed S1 (writing-solid-rust
