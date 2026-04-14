@@ -1,7 +1,6 @@
 project: atelier
 id: atelier
 updated: 2026-04-13
-
 items:
 - id: atelier-1
   doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
@@ -163,8 +162,7 @@ items:
 - id: atelier-10
   name: address-remaining-sentinel-suggestions
   priority: P2
-  status: done
-  completed: 2026-04-13
+  status: open
   title: Address remaining sentinel suggestions (S1–S7) and observations (O1–O5)
   description: |
     Sentinel review surfaced 7 suggestions and 5 observations not yet addressed:
@@ -285,13 +283,21 @@ items:
 log:
 - date: 2026-04-13
   summary: >
-    atelier-10 done — fixed S2/S3 (fd/rg), S4 (workshop skills), S5 (minion body),
-    S7 (hand clone), O3 (permissionMode docs), O5 (justfile error handling). Committed 7688347.
+    Pulled 23 remote commits (bazaar marketplace, bin/ scripts, atelier-14/15 done); resolved
+    plugin.json and HANDOFF conflicts; added pre-push version-stamp hooks to sanctum and
+    orca-strait; switched both to @bazaar install; fixed global pre-commit cmd/**+internal/**
+    pathspec exclusions; updated CLAUDE.md with bazaar registration and obfsck gotchas.
+  commits:
+  - fa43d98
+  - 17669df
+  - a59a5e5
+  - 945499a
+  - 68857c3
 - date: 2026-04-13
-  summary: >
-    Verified plugin loads from bazaar cache (f53284d) after restart; handoff skill correctly
-    references handoff-db on PATH — no sync-sqlite.sh reference. Plugin pipeline confirmed
-    fully self-corrected.
+  summary: |
+    Fixed preflight shell detection: replaced `echo $SHELL` with `which nu zsh bash | head -1`
+    in all three CLAUDE.md files (~/.claude, ~/dev, atelier). Added CLAUDE.md note that
+    .ctx/HANDOFF.state.yaml is intentionally gitignored. Saved shell detection pattern to memory.
   commits: []
 - date: 2026-04-13
   summary: >

@@ -76,7 +76,8 @@ Items have immutable `id`/`title`/`description`/`priority` (P0/P1/P2) and mutabl
 ## Key Design Rules
 
 - **Thin agents only** — agents delegate to `devkit`; no domain logic lives in `atelier/agents/`.
-- **`permissionMode: acceptEdits`** — `forge`, `conductor`, `minion`, and `workshop` all set this so they can edit files without per-call approval. This is intentional and scoped to these interactive agents only.
+- `.ctx/HANDOFF.state.yaml` is intentionally gitignored — it tracks local session state and appearing
+  untracked in `git status` is normal, not a dirty tree.
 - **No duplicate hooks** — global hooks (`rtk-rewrite.sh`, `cargo-fmt.nu`, etc.) live in
   `~/.claude/hooks/`; never copy them here.
 - **`cargo-gate` runs xtask first** — always calls `cargo xtask pre-commit`; the skill adds
@@ -90,6 +91,10 @@ Items have immutable `id`/`title`/`description`/`priority` (P0/P1/P2) and mutabl
 | `sanctum`     | 1Password auth + `.envrc` chain tracing (required for `git-guard` SSH signing)         |
 | `hand`        | Standalone session handoff (optional; atelier's handoff skills are the preferred path) |
 | `orca-strait` | Parallel TDD orchestrator for Rust workspaces (optional)                               |
+
+`atelier`, `sanctum`, and `orca-strait` install from the `bazaar` marketplace. Register it once
+per machine before any `@bazaar` install: `claude plugin marketplace add https://github.com/89jobrien/bazaar`
+`hand` and `vault-keeper` have no GitHub remote — `@local` only.
 
 ## Session Flow
 
