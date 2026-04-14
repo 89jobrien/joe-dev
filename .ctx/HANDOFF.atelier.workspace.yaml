@@ -233,7 +233,7 @@ items:
 - id: atelier-13
   name: propagate-ctx-handoff-to-other-repos
   priority: P2
-  status: open
+  status: done
   title: Propagate .ctx/HANDOFF naming convention to other repos
   description: |
     Now that atelier uses .ctx/HANDOFF.<project>.workspace.yaml, other repos with root-level
@@ -241,6 +241,7 @@ items:
     migrate-handoff.sh. Priority repos: minibox, devloop, doob, braid.
   files: []
   extra: []
+  completed: 2026-04-13
 - id: atelier-14
   name: chmod-handoff-scripts-in-install
   priority: P2
@@ -281,6 +282,12 @@ items:
   completed: 2026-04-13
 
 log:
+- date: 2026-04-13
+  summary: >
+    atelier-13 done — migrated 7 repos (devkit, fmtx, minibox, rascal, slash, hooksmith,
+    sanctum) from root-level HANDOFF files to .ctx/HANDOFF.<project>.workspace.yaml convention.
+    Added !.ctx/HANDOFF.*.yaml gitignore exceptions in each. hooksmith HANDOFF.yaml also
+    renamed to apply strict naming convention.
 - date: 2026-04-13
   summary: >
     Replaced devloop dependency in all 4 agents (conductor, forge, herald, sentinel) with
