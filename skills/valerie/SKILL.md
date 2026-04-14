@@ -39,10 +39,10 @@ If yes — detect the user's shell (`$SHELL`) and run the appropriate setup scri
 
 ```bash
 # sh
-sh <plugin-cache>/atelier/<version>/skills/valerie/scripts/setup.sh
+sh <plugin-cache>/atelier/<version>/skills/valerie/helpers/setup.sh
 
 # nu (if $SHELL contains nu)
-nu <plugin-cache>/atelier/<version>/skills/valerie/scripts/setup.nu
+nu <plugin-cache>/atelier/<version>/skills/valerie/helpers/setup.nu
 ```
 
 The script writes `.claude-plugin/valerie.local.yaml`:
@@ -195,5 +195,5 @@ Stale HANDOFF items:      N items  [list IDs]
 
 - **`references/doob-commands.md`** — Full doob CLI syntax, flags, and output formats
 - **`references/sqlite-fallback.md`** — SQLite schema, wrapper code, and limitations vs doob
-- **`scripts/setup.sh`** — Interactive setup for sh users
-- **`scripts/setup.nu`** — Interactive setup for nu users
+- **`helpers/setup.sh`** — Interactive setup for sh users
+- **`helpers/setup.nu`** — Interactive setup for nu users
