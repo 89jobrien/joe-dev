@@ -182,15 +182,16 @@ Show blocked items and their root blockers.
 
 ## Reading State
 
-After resolving the HANDOFF file, also read `.ctx/HANDOFF.state.yaml` from the same repo root if
-it exists. This file holds build/tests/branch/notes — it is not in HANDOFF.yaml itself.
+After resolving the HANDOFF file, derive the state file path by appending `.state` before `.yaml`
+(e.g. `HANDOFF.atelier.atelier.yaml` → `HANDOFF.atelier.atelier.state.yaml`). Read it if it
+exists. This file holds build/tests/branch/notes — it is not in HANDOFF.yaml itself.
 
 ```
-<repo-root>/.ctx/HANDOFF.state.yaml   # project snapshot — may not exist
-<repo-root>/.ctx/HANDOFF.*.yaml       # tasks/items/log
+<repo-root>/.ctx/HANDOFF.<name>.<base>.state.yaml   # project snapshot — may not exist
+<repo-root>/.ctx/HANDOFF.<name>.<base>.yaml         # tasks/items/log
 ```
 
-If `.ctx/HANDOFF.state.yaml` is absent, omit the State section from output rather than guessing.
+If the state file is absent, omit the State section from output rather than guessing.
 
 ## YAML Parsing
 
@@ -201,13 +202,13 @@ From `HANDOFF.yaml`:
 - `log[*].{date, summary, commits}`
 - `updated`
 
-From `.ctx/HANDOFF.state.yaml`:
+From `.ctx/HANDOFF.<name>.<base>.state.yaml`:
 - `build`, `tests`, `branch`, `notes`
 
 For `.json`, same approach via Read tool.
 
 For `.md` (legacy HANDOFF.md), read as freeform text and infer structure from markdown headers
-and tables. No `.ctx/HANDOFF.state.yaml` will exist for legacy files.
+and tables. No state file will exist for legacy files.
 
 ## Tone and Formatting
 

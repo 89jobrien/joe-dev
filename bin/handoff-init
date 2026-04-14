@@ -1,0 +1,172 @@
+#!/bin/sh
+# handoff-init — Initialize .ctx/ for a repo: scan for packages, create state file stubs,
+# and keep .gitignore accurate.
+#
+# Usage:
+#   handoff-init            # run if not already initialized (.ctx/.initialized absent)
+#   handoff-init --force    # re-run even if already initialized
+#
+# Exit codes:
+#   0  success (or already initialized and --force not passed)
+#   1  not in a git repo or fatal error
+
+set -eu
+
+FORCE=0
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --force) FORCE=1; shift ;;
+        *) echo "error: unknown argument: $1" >&2; exit 1 ;;
+    esac
+done
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
+    echo "error: not in a git repository" >&2
+    exit 1
+}
+
+CTX="${REPO_ROOT}/.ctx"
+TOKEN="${CTX}/.initialized"
+
+if [ "$FORCE" -eq 0 ] && [ -f "$TOKEN" ]; then
+    exit 0
+fi
+
+BASE=$(basename "$REPO_ROOT")
+mkdir -p "$CTX"
+
+# ---------------------------------------------------------------------------
+# Collect package names from manifests into a temp file
+# ---------------------------------------------------------------------------
+
+PKGS_TMP=$(mktemp)
+trap 'rm -f "$PKGS_TMP"' EXIT
+
+# Helper: extract [package] name from Cargo.toml (skip workspace-only roots)
+_cargo_name() {
+    awk '
+        /^\[package\]/ { in_pkg=1; next }
+        /^\[/          { in_pkg=0 }
+        in_pkg && /^name[[:space:]]*=/ {
+            gsub(/^name[[:space:]]*=[[:space:]]*"/, "")
+            gsub(/".*/, "")
+            print; exit
+        }
+    ' "$1"
+}
+
+# Helper: extract name from pyproject.toml
+_pyproject_name() {
+    awk '
+        /^\[project\]/      { in_proj=1; in_poetry=0; next }
+        /^\[tool\.poetry\]/ { in_poetry=1; in_proj=0; next }
+        /^\[/               { in_proj=0; in_poetry=0 }
+        (in_proj || in_poetry) && /^name[[:space:]]*=/ {
+            gsub(/^name[[:space:]]*=[[:space:]]*"/, "")
+            gsub(/".*/, "")
+            print; exit
+        }
+    ' "$1"
+}
+
+# Helper: extract last segment of go module path
+_gomod_name() {
+    awk '/^module / { n=split($2,a,"/"); print a[n]; exit }' "$1"
+}
+
+# Scan manifests
+for manifest in $(find "$REPO_ROOT" -name "Cargo.toml" -not -path "*/target/*" -not -path "*/.git/*" 2>/dev/null); do
+    name=$(_cargo_name "$manifest")
+    [ -n "$name" ] && echo "$name" >> "$PKGS_TMP"
+done
+
+for manifest in $(find "$REPO_ROOT" -name "pyproject.toml" -not -path "*/.git/*" -not -path "*/__pycache__/*" 2>/dev/null); do
+    name=$(_pyproject_name "$manifest")
+    [ -n "$name" ] && echo "$name" >> "$PKGS_TMP"
+done
+
+for manifest in $(find "$REPO_ROOT" -name "go.mod" -not -path "*/.git/*" -not -path "*/vendor/*" 2>/dev/null); do
+    name=$(_gomod_name "$manifest")
+    [ -n "$name" ] && echo "$name" >> "$PKGS_TMP"
+done
+
+# Fallback: repo root dir name if no manifests found
+if [ ! -s "$PKGS_TMP" ]; then
+    echo "$BASE" >> "$PKGS_TMP"
+fi
+
+# Deduplicate, sanitize, sort
+PACKAGES=$(sort -u "$PKGS_TMP" | tr '[:upper:]' '[:lower:]' | tr ' /' '--')
+
+# ---------------------------------------------------------------------------
+# Create state file stubs for each package (if absent)
+# ---------------------------------------------------------------------------
+
+TODAY=$(date +%Y-%m-%d)
+BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || echo unknown)
+
+for pkg in $PACKAGES; do
+    state_file="${CTX}/HANDOFF.${pkg}.${BASE}.state.yaml"
+    if [ ! -f "$state_file" ]; then
+        cat > "$state_file" <<EOF
+updated: ${TODAY}
+branch: ${BRANCH}
+build: unknown
+tests: unknown
+notes: null
+touched_files: []
+EOF
+    fi
+done
+
+# ---------------------------------------------------------------------------
+# Update .gitignore — maintain a guarded block between markers
+# ---------------------------------------------------------------------------
+
+GITIGNORE="${REPO_ROOT}/.gitignore"
+touch "$GITIGNORE"
+
+# Build the block content into a temp file
+BLOCK_TMP=$(mktemp)
+trap 'rm -f "$PKGS_TMP" "$BLOCK_TMP"' EXIT
+
+{
+    echo "# handoff-begin"
+    echo ".ctx/*"
+    echo "!.ctx/HANDOFF.*.*.yaml"
+    for pkg in $PACKAGES; do
+        echo ".ctx/HANDOFF.${pkg}.${BASE}.state.yaml"
+    done
+    echo ".ctx/.initialized"
+    echo "# handoff-end"
+} > "$BLOCK_TMP"
+
+BEGIN="# handoff-begin"
+END="# handoff-end"
+
+if grep -q "^${BEGIN}$" "$GITIGNORE" 2>/dev/null; then
+    # Replace existing block
+    GITIGNORE_TMP=$(mktemp)
+    awk -v begin="$BEGIN" -v end="$END" -v block_file="$BLOCK_TMP" '
+        $0 == begin {
+            skip=1
+            while ((getline line < block_file) > 0) print line
+            next
+        }
+        skip && $0 == end { skip=0; next }
+        skip { next }
+        { print }
+    ' "$GITIGNORE" > "$GITIGNORE_TMP" && mv "$GITIGNORE_TMP" "$GITIGNORE"
+else
+    # Append block
+    printf '\n' >> "$GITIGNORE"
+    cat "$BLOCK_TMP" >> "$GITIGNORE"
+fi
+
+# ---------------------------------------------------------------------------
+# Write token
+# ---------------------------------------------------------------------------
+
+echo "$TODAY" > "$TOKEN"
+
+echo "handoff-init: initialized ${CTX} (base=${BASE}, packages=$(echo "$PACKAGES" | tr '\n' ' ' | sed 's/ $//'))"

@@ -19,8 +19,8 @@ allowed-tools:
 
 `HANDOFF.yaml` is the committed source of truth for task/workflow tracking. Item status is also
 mirrored to a local SQLite database for cross-session queries without parsing YAML.
-Project state (build, tests, branch) lives separately in `.ctx/HANDOFF.state.yaml` — generated,
-never committed. A rendered reference doc is also written to `.ctx/HANDOFF.md`.
+Project state (build, tests, branch) lives separately in `.ctx/HANDOFF.<name>.<base>.state.yaml`
+— generated, never committed. A rendered reference doc is also written to `.ctx/HANDOFF.md`.
 
 See `references/schema.md` for the full YAML schema, immutability rules, priority guide,
 and file layout.
@@ -51,7 +51,7 @@ cargo check 2>&1 | tail -3   # or language equivalent
 cargo test 2>&1 | tail -5
 ```
 
-### 2. Read existing HANDOFF.yaml and .ctx/HANDOFF.state.yaml (if present)
+### 2. Read existing HANDOFF.yaml and .ctx/HANDOFF.<name>.<base>.state.yaml (if present)
 
 ### 3. Update HANDOFF.yaml
 
@@ -74,7 +74,7 @@ entry.
 
 Emit clean YAML. No anchors, no aliases.
 
-### 5. Write .ctx/HANDOFF.state.yaml
+### 5. Write .ctx/HANDOFF.<name>.<base>.state.yaml
 
 Create `.ctx/` if it does not exist. Overwrite completely with current state from step 1.
 
@@ -162,10 +162,11 @@ git status
 ```
 
 Populate `log` from recent commits. Leave `items` empty or with one P1 if there's an obvious
-next step. Write `.ctx/HANDOFF.state.yaml` from actual build/test output.
+next step. Write `.ctx/HANDOFF.<name>.<base>.state.yaml` from actual build/test output.
 
-Place the new HANDOFF file at `.ctx/HANDOFF.<project>.workspace.yaml` (or
-`.ctx/HANDOFF.<project>.<cwd-basename>.yaml` if invoked from a subdirectory).
+Place the new HANDOFF file at `.ctx/HANDOFF.<name>.<base>.yaml` where `<name>` is the
+package/crate name from the nearest manifest and `<base>` is the repo root dir name.
+Use `handoff-detect --name` to get the correct filename.
 
 ## Legacy HANDOFF.md
 

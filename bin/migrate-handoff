@@ -29,12 +29,8 @@ fi
 PROJECT=$(basename "$REPO_ROOT")
 OLD_DIR=$(dirname "$OLD_PATH")
 
-# Determine <base>: workspace if file sits at repo root, otherwise the containing dir name
-if [ "$OLD_DIR" = "$REPO_ROOT" ]; then
-    BASE="workspace"
-else
-    BASE=$(basename "$OLD_DIR")
-fi
+# <base> is always the repo root dir name
+BASE=$(basename "$REPO_ROOT")
 
 NEW_PATH="${REPO_ROOT}/.ctx/HANDOFF.${PROJECT}.${BASE}.yaml"
 

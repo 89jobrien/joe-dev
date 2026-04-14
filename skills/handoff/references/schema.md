@@ -88,30 +88,40 @@ Extend freely with project-specific facts (e.g. `rust_edition`, `open_prs`, `las
 
 ## File Layout
 
-| File                                         | Location | Committed | Purpose                        |
-| -------------------------------------------- | -------- | --------- | ------------------------------ |
-| `.ctx/HANDOFF.<project>.<base>.yaml`         | `.ctx/`  | yes       | Tasks, items, log              |
-| `.ctx/HANDOFF.state.yaml`                    | `.ctx/`  | no        | Project snapshot               |
-| `.ctx/HANDOFF.md`                            | `.ctx/`  | no        | Generated reference doc        |
-| `.ctx/handoff.<project>.config.toml`         | `.ctx/`  | no        | Local runtime vars (user-owned)|
-| `.ctx/handoff.<project>.config.toml.example` | `.ctx/`  | yes       | Committed template for config  |
+| File                                          | Location | Committed | Purpose                        |
+| --------------------------------------------- | -------- | --------- | ------------------------------ |
+| `.ctx/HANDOFF.<name>.<base>.yaml`             | `.ctx/`  | yes       | Tasks, items, log              |
+| `.ctx/HANDOFF.<name>.<base>.state.yaml`       | `.ctx/`  | no        | Project/package snapshot       |
+| `.ctx/HANDOFF.md`                             | `.ctx/`  | no        | Generated reference doc        |
+| `.ctx/.initialized`                           | `.ctx/`  | no        | Init token (date of last init) |
+| `.ctx/handoff.<project>.config.toml`          | `.ctx/`  | no        | Local runtime vars (user-owned)|
+| `.ctx/handoff.<project>.config.toml.example`  | `.ctx/`  | yes       | Committed template for config  |
 
-`.gitignore` must contain:
+`.gitignore` is managed by `handoff-init` between `# handoff-begin` / `# handoff-end` markers:
+
 ```
+# handoff-begin
 .ctx/*
-!.ctx/HANDOFF.*.yaml
 !.ctx/HANDOFF.*.*.yaml
 !.ctx/handoff.*.config.toml.example
+.ctx/HANDOFF.<name>.<base>.state.yaml   # one line per package
+.ctx/.initialized
+# handoff-end
 ```
 
-This ignores all `.ctx/` contents while un-ignoring committed HANDOFF files and the config example.
-The real `handoff.*.config.toml` stays gitignored — it is machine-local and user-owned.
+Do not edit this block manually — run `handoff-init --force` to regenerate it.
 
 ## Naming Convention
 
-- **Root handoff** (cwd == repo root): `.ctx/HANDOFF.<project>.workspace.yaml`
-- **Nested handoff** (cwd != repo root): `.ctx/HANDOFF.<project>.<cwd-basename>.yaml`
+`HANDOFF.<name>.<base>.yaml` where:
+- `<name>` = package/crate name from manifest (`Cargo.toml`, `pyproject.toml`, `go.mod`),
+  fallback to dir basename
+- `<base>` = repo root dir name (e.g. `atelier`, `doob`, `crux`) — constant for all files
+  in a repo
 
-Where:
-- `project` = name from Cargo.toml / go.mod / pyproject.toml, fallback to repo root dir name
-- `cwd-basename` = `basename $(pwd)` at time of invocation
+Examples:
+- Root of repo `atelier` with package `atelier`: `.ctx/HANDOFF.atelier.atelier.yaml`
+- Crate `cruxai` in repo `crux`: `.ctx/HANDOFF.cruxai.crux.yaml`
+- Nested crate `handoff` in repo `atelier`: `.ctx/HANDOFF.handoff.atelier.yaml`
+
+State files follow the same `<name>.<base>` pattern with `.state.yaml` suffix.

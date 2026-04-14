@@ -24,3 +24,10 @@ skills/*/scripts/test_*.py
 *~
 *.log
 *.tmp
+
+# handoff-begin
+.ctx/*
+!.ctx/HANDOFF.*.*.yaml
+.ctx/HANDOFF.atelier.atelier.state.yaml
+.ctx/.initialized
+# handoff-end

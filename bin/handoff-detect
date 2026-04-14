@@ -1,11 +1,12 @@
 #!/bin/sh
-# handoff-detect.sh — Locate the HANDOFF.*.yaml file for the current repo.
+# handoff-detect — Locate the HANDOFF.*.*.yaml file for the current context.
 #
 # Usage:
 #   handoff-detect            # print full path; exit 0 if found, 2 if not
 #   handoff-detect --name     # filename only
 #   handoff-detect --root     # repo root path
-#   handoff-detect --project  # project name (basename of repo root)
+#   handoff-detect --project  # project/package name
+#   handoff-detect --init     # force re-run of handoff-init before detection
 #
 # Exit codes:
 #   0  file found (or migration succeeded)
@@ -15,12 +16,14 @@
 set -eu
 
 MODE=path
+FORCE_INIT=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
         --name)    MODE=name;    shift ;;
         --root)    MODE=root;    shift ;;
         --project) MODE=project; shift ;;
+        --init)    FORCE_INIT=1; shift ;;
         *)
             echo "error: unknown argument: $1" >&2
             exit 1
@@ -34,43 +37,103 @@ REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null) || {
     exit 1
 }
 
-PROJECT=$(basename "$REPO_ROOT")
-CWD_BASE=$(basename "$PWD")
+BASE=$(basename "$REPO_ROOT")
+SCRIPT_DIR=$(dirname "$0")
 
-# Naming: if cwd IS the repo root, use "workspace"; otherwise use cwd basename
-if [ "$CWD_BASE" = "$PROJECT" ]; then
-    FILENAME="HANDOFF.${PROJECT}.workspace.yaml"
-else
-    FILENAME="HANDOFF.${PROJECT}.${CWD_BASE}.yaml"
+# ---------------------------------------------------------------------------
+# Lazy init — run handoff-init if .ctx/.initialized is absent or --init passed
+# ---------------------------------------------------------------------------
+
+CTX="${REPO_ROOT}/.ctx"
+TOKEN="${CTX}/.initialized"
+
+if [ "$FORCE_INIT" -eq 1 ]; then
+    sh "${SCRIPT_DIR}/handoff-init" --force
+elif [ ! -f "$TOKEN" ]; then
+    sh "${SCRIPT_DIR}/handoff-init"
 fi
 
-TARGET="${REPO_ROOT}/.ctx/${FILENAME}"
+# ---------------------------------------------------------------------------
+# Derive package name for current context
+# ---------------------------------------------------------------------------
 
-# Return early for metadata flags (no file check needed)
-if [ "$MODE" = "root" ]; then
-    echo "$REPO_ROOT"
-    exit 0
-fi
-if [ "$MODE" = "project" ]; then
-    echo "$PROJECT"
-    exit 0
-fi
-if [ "$MODE" = "name" ]; then
-    echo "$FILENAME"
-    exit 0
-fi
+# Look for a manifest in cwd, then repo root. Prefer cwd for nested packages.
+_pkg_name_from_manifest() {
+    dir="$1"
 
+    # Cargo.toml
+    if [ -f "${dir}/Cargo.toml" ]; then
+        name=$(awk '
+            /^\[package\]/ { in_pkg=1; next }
+            /^\[/          { in_pkg=0 }
+            in_pkg && /^name[[:space:]]*=/ {
+                gsub(/^name[[:space:]]*=[[:space:]]*"/, "")
+                gsub(/".*/, "")
+                print; exit
+            }
+        ' "${dir}/Cargo.toml")
+        [ -n "$name" ] && echo "$name" && return
+    fi
+
+    # pyproject.toml
+    if [ -f "${dir}/pyproject.toml" ]; then
+        name=$(awk '
+            /^\[project\]/      { in_proj=1; in_poetry=0; next }
+            /^\[tool\.poetry\]/ { in_poetry=1; in_proj=0; next }
+            /^\[/               { in_proj=0; in_poetry=0 }
+            (in_proj || in_poetry) && /^name[[:space:]]*=/ {
+                gsub(/^name[[:space:]]*=[[:space:]]*"/, "")
+                gsub(/".*/, "")
+                print; exit
+            }
+        ' "${dir}/pyproject.toml")
+        [ -n "$name" ] && echo "$name" && return
+    fi
+
+    # go.mod
+    if [ -f "${dir}/go.mod" ]; then
+        name=$(awk '/^module / { n=split($2,a,"/"); print a[n]; exit }' "${dir}/go.mod")
+        [ -n "$name" ] && echo "$name" && return
+    fi
+
+    return 1
+}
+
+# Try cwd manifest first, then repo root manifest, then fall back to dir basename
+NAME=$(_pkg_name_from_manifest "$PWD" 2>/dev/null) \
+    || NAME=$(_pkg_name_from_manifest "$REPO_ROOT" 2>/dev/null) \
+    || NAME=$(basename "$PWD")
+
+# Sanitize
+NAME=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | tr ' /' '--')
+
+FILENAME="HANDOFF.${NAME}.${BASE}.yaml"
+TARGET="${CTX}/${FILENAME}"
+
+# ---------------------------------------------------------------------------
+# Return early for metadata flags
+# ---------------------------------------------------------------------------
+
+if [ "$MODE" = "root" ];    then echo "$REPO_ROOT"; exit 0; fi
+if [ "$MODE" = "project" ]; then echo "$NAME";      exit 0; fi
+if [ "$MODE" = "name" ];    then echo "$FILENAME";  exit 0; fi
+
+# ---------------------------------------------------------------------------
 # Check canonical location
+# ---------------------------------------------------------------------------
+
 if [ -f "$TARGET" ]; then
     echo "$TARGET"
     exit 0
 fi
 
+# ---------------------------------------------------------------------------
 # Migration fallback: look for any HANDOFF.*.yaml at repo root
-OLD=$(ls "${REPO_ROOT}"/HANDOFF.*.yaml 2>/dev/null | head -1)
+# ---------------------------------------------------------------------------
+
+OLD=$(ls "${REPO_ROOT}"/HANDOFF.*.yaml 2>/dev/null | head -1 || true)
 if [ -n "$OLD" ]; then
-    SCRIPT_DIR=$(dirname "$0")
-    NEW=$(sh "${SCRIPT_DIR}/migrate-handoff.sh" "$REPO_ROOT" "$OLD") || exit 1
+    NEW=$(sh "${SCRIPT_DIR}/migrate-handoff" "$REPO_ROOT" "$OLD") || exit 1
     echo "$NEW"
     exit 0
 fi

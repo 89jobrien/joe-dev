@@ -55,9 +55,10 @@ If invoked from a workspace root (e.g. `~/dev`) with no `.git`, sweep subdirs fo
 If only a legacy `HANDOFF.md` exists at repo root, read it as freeform. Do not convert unless
 asked.
 
-### 2. Read .ctx/HANDOFF.state.yaml
+### 2. Read .ctx/HANDOFF.<name>.<base>.state.yaml
 
-After locating the HANDOFF file, read `.ctx/HANDOFF.state.yaml` from the same repo root if it
+After locating the HANDOFF file, derive the state file path by appending `.state` before `.yaml`
+(e.g. `HANDOFF.atelier.atelier.yaml` → `HANDOFF.atelier.atelier.state.yaml`). Read it if it
 exists. Extract `branch`, `build`, `tests`, `notes`, `touched_files` and surface them in the
 triage header:
 

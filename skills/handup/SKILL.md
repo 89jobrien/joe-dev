@@ -37,7 +37,8 @@ For each file found:
 - Read `items` list (YAML) or relevant sections (MD)
 - Filter to `status: open` or `status: blocked`
 - Find repo root: `git -C "$(dirname <file>)" rev-parse --show-toplevel 2>/dev/null`
-- Read `<repo-root>/.ctx/HANDOFF.state.yaml` if present — extract `branch`, `build`, `tests`
+- Read the matching state file (same `<name>.<base>` as the HANDOFF file + `.state.yaml`) if
+  present — extract `branch`, `build`, `tests`
 
 Skip files under `.git/`, `target/`, `node_modules/`.
 
