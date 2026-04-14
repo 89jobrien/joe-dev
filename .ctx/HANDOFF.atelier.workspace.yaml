@@ -1,6 +1,6 @@
 project: atelier
 id: atelier
-updated: 2026-04-13
+updated: 2026-04-14
 items:
 - id: atelier-1
   doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
@@ -242,6 +242,34 @@ items:
   files: []
   extra: []
   completed: 2026-04-13
+- id: atelier-16
+  name: handoff-detect-ctx-search
+  priority: P1
+  status: open
+  title: Update handoff-detect to search .ctx/ first
+  description: |
+    handoff-detect (bin/handoff-detect) only searches the repo root for HANDOFF.*.yaml.
+    Since atelier-11 moved all HANDOFF files into .ctx/, it returns exit 2 for any repo
+    that has completed the migration. Fix: search .ctx/ for HANDOFF.*.workspace.yaml and
+    HANDOFF.*.*.yaml before falling back to root. Update --name/--root/--project flags
+    to remain consistent with new paths.
+  files:
+  - bin/handoff-detect
+  extra: []
+- id: atelier-17
+  name: ctx-config-convention-pending-repos
+  priority: P2
+  status: open
+  title: Land config.toml.example in crux and devloop (pre-commit failures)
+  description: |
+    Two repos were skipped during the workspace-wide config convention propagation due to
+    pre-existing hook failures unrelated to the change:
+    - crux: fmt failure in tools/secrets-scan/src/main.rs (import ordering)
+    - devloop: clippy failure in examples/analyze-real-session.rs (missing tokio dep in
+      [dev-dependencies] for devloop-baml example target)
+    Fix each underlying issue, then land the handoff.$repo.config.toml.example commit.
+  files: []
+  extra: []
 - id: atelier-14
   name: chmod-handoff-scripts-in-install
   priority: P2
@@ -282,6 +310,16 @@ items:
   completed: 2026-04-13
 
 log:
+- date: 2026-04-14
+  summary: >
+    Completed full workspace .ctx/HANDOFF migration (atelier-13): 8 repos migrated, fmtx/rascal/slash
+    renamed to add .workspace suffix. Added .ctx/handoff.<repo>.config.toml convention — handon step 0
+    loads it, schema.md updated, example committed. Propagated to all 26 repos (crux and devloop skipped:
+    pre-existing hook failures). handoff-detect stale (atelier-16 opened). devloop-baml example tokio dep
+    and crux import ordering tracked in atelier-17.
+  commits:
+  - 9a19b30
+  - e19db7d
 - date: 2026-04-13
   summary: >
     atelier-13 done — migrated 7 repos (devkit, fmtx, minibox, rascal, slash, hooksmith,
