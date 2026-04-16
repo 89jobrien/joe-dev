@@ -16,10 +16,23 @@ allowed-tools:
 
 # valerie — Task and Todo Management
 
-Valerie manages tasks and todos using a configured backend (doob or sqlite). Before any
-todo workflow, run the setup check. Then handle one of five workflows: direct CRUD,
-structured-source ingestion (council reports, HANDOFF files), HANDOFF write-back, and
-audit/reconciliation.
+Valerie manages tasks and todos using a configured backend (doob or sqlite). Valerie is the
+only skill that should talk to `doob` or run the GitHub issue sync loop. Other skills should
+use `handoff-db`/SQLite plus transient HANDOFF YAML only. Before any todo workflow, run the
+setup check. Then handle one of five workflows: direct CRUD, structured-source ingestion
+(council reports, HANDOFF files), HANDOFF cleanup/write-back, and audit/reconciliation. For
+HANDOFF sources, prefer the shared `handoff-reconcile` script over hand-written `doob`
+commands.
+
+Default active-work loop:
+
+1. Sync GitHub issues into `doob`
+2. Read HANDOFF files as short-lived context for still-open work
+3. Update issue/todo state in `doob`
+4. Sync `doob` back to GitHub issues
+
+HANDOFF files are not the backlog system. Active `items` should not retain closed work after
+sync, but the `log` section remains durable and should keep one-line completion records.
 
 ## Setup Check (run first, every session)
 
@@ -123,51 +136,70 @@ When a council analysis report (devloop analyze output, `*-council.md`) is refer
 6. Create all unique todos via `doob todo add`
 7. Report a summary table: count by priority level
 
-## Workflow 3 — HANDOFF Context → Todos
+## Workflow 3 — HANDOFF Context → Todo Reconciliation
 
 When a `HANDOFF.*.yaml` is the source:
 
-1. Read the HANDOFF file (use `handoff-detect` if available)
-2. Extract all items with `status: open` or `status: blocked`
-3. For each item, create a todo:
-   - description: `<title>` (append `[BLOCKED]` if blocked)
+```bash
+handoff-reconcile sync --handoff <path-to-HANDOFF.yaml>
+```
+
+Use this as the default path. Only fall back to direct `doob` commands when extending or
+debugging the reconciler itself.
+
+1. Run the configured GitHub issue sync into `doob`
+2. Read the HANDOFF file (use `handoff-detect` if available)
+3. Extract all items with `status: open` or `status: blocked`
+4. For each item, reconcile it against the matching `doob` todo/issue:
+   - description: normalized `name` when present, otherwise `<title>` (append `[BLOCKED]` if blocked)
    - priority: map P0→5, P1→4, P2→3
    - project: from HANDOFF `project` field
    - tags: `handoff,<project>`
-4. Skip items already marked `status: done` or `status: parked`
-5. After creating todos, proceed to Workflow 4
+5. Create a new todo only if no matching active todo/issue exists
+6. Treat HANDOFF as context only. If the matching todo/issue is already closed, mark the
+   HANDOFF item for removal during Workflow 4
 
-## Workflow 4 — HANDOFF Write-Back
+## Workflow 4 — HANDOFF Cleanup / Write-Back
 
-After capturing HANDOFF items as todos, update the HANDOFF file to record the capture.
+After reconciling HANDOFF items with `doob`, update the HANDOFF file so its `items` only
+contain still-open context.
 
-For each captured item, append to its `extra` array:
+For each still-open item that was reconciled, optionally append to its `extra` array:
 
 ```yaml
 extra:
   - date: <today>
     type: note
-    note: "captured in doob — todo id <doob-id>"
+    note: "reconciled with doob — todo id <doob-id>"
 ```
 
-Immutability rules apply: never edit `title`, `description`, `priority`, `files`, or `name`.
-Only append to `extra`. Write back and commit:
+Remove any item whose matching todo/issue is complete, cancelled, or closed upstream. Do not
+retain closed items in committed `items`. Preserve or prepend a one-line `log` entry for
+finished work, ideally with commit hashes when known. Write back and commit:
 
 ```bash
-git add HANDOFF.*.yaml
-git commit -m "docs: capture handoff items in doob"
+git add .ctx/HANDOFF.*.*.yaml
+git commit -m "docs: prune resolved handoff items"
 ```
 
 ## Workflow 5 — Audit and Reconciliation
 
 When asked to audit todos against a HANDOFF:
 
-1. Read HANDOFF — collect all open/blocked item IDs and titles
-2. Run `doob todo list -p <project> --json` — collect all pending/in-progress todos
+```bash
+handoff-reconcile audit --handoff <path-to-HANDOFF.yaml>
+```
+
+Use this as the default audit path, then fall back to the manual checklist below only when you
+need to debug a mismatch.
+
+1. Run the configured GitHub issue sync into `doob`
+2. Read HANDOFF — collect all open/blocked item IDs and titles
+3. Run `doob todo list -p <project> --json` — collect all pending/in-progress todos
 3. Cross-reference:
    - HANDOFF items with no matching todo → **not captured**
    - Todos with no matching HANDOFF item → **orphaned** (may be from council reports)
-   - Todos marked complete but HANDOFF item still open → **stale HANDOFF**
+   - Todos/issues marked complete or closed while HANDOFF item still exists → **prune from HANDOFF**
 4. Report the reconciliation table:
 
 ```
@@ -176,10 +208,10 @@ Reconciliation — <project>
 Captured (HANDOFF→doob):  N items
 Not captured:             N items  [list titles]
 Orphaned todos:           N items  [list descriptions]
-Stale HANDOFF items:      N items  [list IDs]
+Closed upstream:          N items  [list IDs]
 ```
 
-5. Offer to: capture missing items, mark stale HANDOFF items done, or remove orphaned todos
+5. Offer to: capture missing items, prune closed HANDOFF items, or remove orphaned todos
 
 ## Behavior Rules
 
@@ -188,8 +220,14 @@ Stale HANDOFF items:      N items  [list IDs]
 - Infer project from cwd (`git rev-parse --show-toplevel | xargs basename`) if not specified
 - Keep descriptions actionable: verb-first, specific, under 100 chars
 - When deduplicating council recs, prefer the synthesis wording if available
-- Never write to HANDOFF files without confirming first (write-back is the exception —
-  it's additive-only and low-risk)
+- Valerie is the only skill that should touch `doob`; all other skills should use
+  `handoff-db`/SQLite and HANDOFF YAML only
+- For HANDOFF reconciliation, call `handoff-reconcile` first; direct `doob` commands are the
+  fallback/debug path, not the default
+- Never treat HANDOFF `items` as the source of truth for closed work; prune closed items after
+  sync, but preserve durable `log` history
+- Never write to HANDOFF files without confirming first, except for low-risk reconciliation
+  cleanup after `doob`/GitHub sync
 
 ## Additional Resources
 
