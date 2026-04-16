@@ -1,399 +1,116 @@
 project: atelier
 id: atelier
-updated: 2026-04-14
+updated: 2026-04-16
 items:
-- id: atelier-1
-  doob_uuid: 648a663b-58e8-4d57-9397-15855a41b5de
-  name: install-and-test-plugins
-  priority: P1
-  status: done
-  title: Install and test both plugins in a live Claude session
-  description: |
-    Install atelier and sanctum via `claude --plugin-dir` and verify skills trigger
-    correctly, agents appear, and the SessionStart hook fires on session start.
-  files: []
-  extra: []
-  completed: 2026-04-05
-- id: atelier-2
-  doob_uuid: ab4422fd-ccd2-43d9-b1cc-c58f9aa32429
-  name: handover-diagram-script
-  priority: P1
-  status: done
-  title: Wire generate-diagrams.py into handover skill output
-  description: |
-    scripts/generate-diagrams.py is complete and working (uv run, pyyaml, 4 diagram types:
-    dependency, sprint, coverage, blocked). The handover skill SKILL.md needs to be updated
-    to call the script instead of generating diagrams inline via LLM. Skill should run
-    `./scripts/generate-diagrams.py --handoff <path>` and embed stdout into HANDOVER.md.
-  files:
-  - skills/handover/SKILL.md
-  - scripts/generate-diagrams.py
-  extra: []
-  completed: 2026-04-05
-- id: atelier-3
-  doob_uuid: 050b2a2e-13c7-4a6e-a45d-5e1b18957de7
-  name: add-claude-md
-  priority: P2
-  status: done
-  title: Create CLAUDE.md with architecture and usage guidance
-  description: |
-    Generated CLAUDE.md covering build commands (just init/reinstall), skill and agent
-    inventory with trigger phrases, handoff system schema, key design rules, companion
-    plugins, and session flow.
-  files:
-  - CLAUDE.md
-  extra: []
-  completed: 2026-04-05
-- id: atelier-4
-  doob_uuid: ad271290-7d38-431d-bd60-41c0c53ee53e
-  name: rtk-hook-v3-update
-  priority: P1
-  status: done
-  title: Update rtk-rewrite.nu to v3 exit code protocol
-  description: |
-    rtk init -g updated rtk-rewrite.sh to v3 (exit codes 0/1/2/3 for allow/passthrough/
-    deny/ask). Updated rtk-rewrite.nu in ~/.claude/hooks/nu/pre/ to match — added match
-    on exit code, emit without permissionDecision on exit 3 (ask), pass-through on 2 (deny).
-  files:
-  - ~/.claude/hooks/nu/pre/rtk-rewrite.nu
-  extra: []
-  completed: 2026-04-05
-- id: atelier-5
-  doob_uuid: 1bbfbb4f-5f3c-446c-afd5-bf09ef50c66f
-  name: skills-references-and-scripts
-  priority: P1
-  status: done
-  title: Add references/ and scripts/ dirs to all skills
-  description: |
-    Added references/ (static knowledge) and scripts/ (sh/nu only) to skills that need them.
-    Reference files: ci-assist/target-triples.md, handoff/schema.md,
-    hook-diagnostics/hooks-registry.md, project-pulse/active-repos.md.
-    Scripts: handoff/scripts/sync-sqlite.sh (yq+sqlite3 upsert/query),
-    handover/scripts/generate-diagrams.nu (nu port of py diagram generator).
-    handover SKILL.md updated to prefer nu → py → inline fallback.
-    handoff/handon SKILL.md updated to delegate SQLite ops to sync-sqlite.sh.
-    Policy: scripts/ is sh/nu only; generate-diagrams.py is the sole grandfathered exception.
-  files:
-  - skills/ci-assist/references/target-triples.md
-  - skills/ci-assist/SKILL.md
-  - skills/handoff/references/schema.md
-  - skills/handoff/scripts/sync-sqlite.sh
-  - skills/handoff/SKILL.md
-  - skills/handon/SKILL.md
-  - skills/handover/references/diagram-patterns.md
-  - skills/handover/scripts/generate-diagrams.nu
-  - skills/handover/SKILL.md
-  - skills/hook-diagnostics/references/hooks-registry.md
-  - skills/hook-diagnostics/SKILL.md
-  - skills/project-pulse/references/active-repos.md
-  - skills/project-pulse/SKILL.md
-  extra: []
-  completed: 2026-04-05
-- id: atelier-6
-  doob_uuid: 17714244-1b14-4bf7-967c-4f0fa502d661
-  name: validate-new-scripts-next-session
-  priority: P1
-  status: done
-  title: Validate generate-diagrams.nu and sync-sqlite.sh in a fresh session
-  description: |
-    Validated: scripts present in cache 0.8.0+, nu script runs clean, SQLite syncs all items.
-  files:
-  - skills/handover/scripts/generate-diagrams.nu
-  - skills/handoff/scripts/sync-sqlite.sh
-  extra: []
-  completed: 2026-04-05
-- id: atelier-7
-  doob_uuid: 874209e6-a817-47e9-b0fb-0a16325e771a
-  name: fix-course-correct-exit-code
-  priority: P1
-  status: done
-  title: Fix pre-tool-course-correct.nu deny exit code protocol
-  description: |
-    Root cause found and resolved: load_rules was double-parsing JSON (open + from json),
-    so rules never matched. Fixed to use open only. Deny signal: exit 2 + stderr is correct
-    — Claude Code shows "hook blocking error" for all hook-driven blocks regardless of JSON.
-    permissionDecision deny + exit 0 is not honored by Claude Code. Accepted behavior.
-  files:
-  - /Users/joe/.claude/hooks/nu/pre/pre-tool-course-correct.nu
-  extra: []
-  completed: 2026-04-05
-- id: atelier-8
-  doob_uuid: 252e74fd-4830-4025-b004-e08d5f36e7ce
-  name: extract-coursers-repo
-  priority: P1
-  status: done
-  title: Extract course-correction pipeline into standalone coursers repo
-  description: |
-    Extracted pre-tool-course-correct and post-tool-track-failures logic from nu scripts
-    into a standalone Rust binary (coursers). Binary owns all rule-matching and failure-
-    tracking logic; nu hooks become thin one-liners: `echo $raw | ^coursers pre/post`.
-    Committed and pushed to https://github.com/89jobrien/coursers. obfsck allowlist updated
-    to include the coursers GitHub URL. Global pre-commit hook updated to exclude Cargo.lock.
-  files:
-  - /Users/joe/dev/coursers/src/main.rs
-  - /Users/joe/dev/coursers/src/rules.rs
-  - /Users/joe/dev/coursers/src/state.rs
-  - /Users/joe/.claude/hooks/nu/pre/pre-tool-course-correct.nu
-  - /Users/joe/.claude/hooks/nu/post/post-tool-track-failures.nu
-  - /Users/joe/.config/git/hooks/pre-commit
-  - /Users/joe/.config/obfsck/allowlist
-  extra: []
-  completed: 2026-04-05
-- id: atelier-9
-  name: fix-blocking-sentinel-issues
-  priority: P1
-  status: done
-  title: Fix B3/B4/B1 blocking issues found by sentinel review
-  description: |
-    Sentinel one-shot review found 5 blocking issues. Resolved B3 (circular symlinks
-    atelier/agents and atelier/skills, nested manifest), B4 (pre-push gutted to plugit call
-    — restored version-stamp + reinstall logic), and B1 (justfile used atelier@atelier
-    which never resolves — fixed to atelier@local). Skills load by directory convention;
-    no manifest registration needed.
-  files:
-  - atelier/agents
-  - atelier/skills
-  - atelier/.claude-plugin/plugin.json
-  - marketplace.json
-  - .githooks/pre-push
-  - justfile
-  extra: []
-  completed: 2026-04-13
-- id: atelier-10
-  name: address-remaining-sentinel-suggestions
-  priority: P2
-  status: done
-  title: Address remaining sentinel suggestions (S1–S7) and observations (O1–O5)
-  description: |
-    Sentinel review surfaced 7 suggestions and 5 observations not yet addressed:
-    S1: maxion/midion reference non-existent writing-solid-rust skill.
-    S2/S3: handup/handdown use grep/find in code blocks (blocked anti-patterns — use rg/fd).
-    S4: workshop agent lists stale onboard name and minion as a skill (it's an agent).
-    S5: minion agent has direct behavioral instructions — violates thin-wrapper rule.
-    S6: HANDOFF atelier-1/atelier-2 had open status with completed dates (fixed this session).
-    S7: onboard-atelier Step 2 cd ~/dev/hand but never clones hand repo first.
-    O1: .claude-plugin/marketplace.json leftover after root marketplace.json removed.
-    O3: forge/conductor have permissionMode acceptEdits — undocumented in CLAUDE.md.
-    O5: justfile || true on marketplace add swallows errors silently.
-  files:
-  - agents/maxion.md
-  - agents/minion.md
-  - agents/workshop.md
-  - skills/handup/SKILL.md
-  - skills/handdown/SKILL.md
-  - skills/onboard-atelier/SKILL.md
-  - justfile
-  - CLAUDE.md
-  extra: []
-  completed: 2026-04-13
-- id: atelier-11
-  name: handoff-ctx-migration
-  priority: P1
-  status: done
-  title: Move HANDOFF files into .ctx/ with strict naming convention
-  description: |
-    All HANDOFF files now live in .ctx/ (committed) instead of repo root. Strict naming:
-    .ctx/HANDOFF.<project>.workspace.yaml (root) or .ctx/HANDOFF.<project>.<cwd>.yaml
-    (nested). New scripts: handoff-detect.sh, migrate-handoff.sh, handoff-db.sh (replaces
-    sync-sqlite.sh). .gitignore updated to .ctx/* + !.ctx/HANDOFF.*.yaml. Global pre-commit
-    hook updated with !**/HANDOFF.*.workspace.yaml exclusion. All 5 skill files updated.
-  files:
-  - .gitignore
-  - .ctx/HANDOFF.atelier.workspace.yaml
-  - skills/handoff/scripts/handoff-detect.sh
-  - skills/handoff/scripts/migrate-handoff.sh
-  - skills/handoff/scripts/handoff-db.sh
-  - skills/handoff/SKILL.md
-  - skills/handon/SKILL.md
-  - skills/handover/SKILL.md
-  - skills/handdown/SKILL.md
-  - skills/handup/SKILL.md
-  - skills/handoff/references/schema.md
-  - CLAUDE.md
-  - /Users/joe/.config/git/hooks/pre-commit
-  extra: []
-  completed: 2026-04-13
-- id: atelier-12
-  name: handup-handdown-separation
-  priority: P1
-  status: done
-  title: Separate handup/handdown concerns — HANDUP.json handoff, absolute paths
-  description: |
-    handup now writes $CWD/.ctx/HANDUP.json with full structured findings (projects, items,
-    todos, recommendation). handdown consumes HANDUP.json if present and same-day instead of
-    re-sweeping. Both skills use absolute paths throughout (CWD=$(pwd) base). handdown commit
-    step uses absolute repo_root and handoff_path from project record, skips on git error
-    without blocking other repos.
-  files:
-  - skills/handup/SKILL.md
-  - skills/handdown/SKILL.md
-  extra: []
-  completed: 2026-04-13
-- id: atelier-13
-  name: propagate-ctx-handoff-to-other-repos
-  priority: P2
-  status: open
-  title: Propagate .ctx/HANDOFF naming convention to other repos
-  description: |
-    handoff-init + handoff-detect now handle auto-migration and gitignore management.
-    Run `handoff-detect --init` in each priority repo to trigger init: minibox, devloop,
-    doob, braid. Any root-level HANDOFF.*.yaml will be auto-renamed to the new convention.
-  files: []
-  extra: []
-- id: atelier-16
-  name: handoff-naming-convention-v2
-  priority: P1
-  status: done
-  title: Implement HANDOFF.<name>.<base> naming convention with handoff-init
-  description: |
-    Replaced workspace sentinel with repo-root dir name as <base>. Added handoff-init
-    script that scans Cargo.toml/pyproject.toml/go.mod for package names, creates
-    HANDOFF.<name>.<base>.state.yaml stubs per package, maintains # handoff-begin /
-    # handoff-end block in .gitignore, and stamps .ctx/.initialized token. handoff-detect
-    now calls handoff-init lazily on missing token, derives <name> from nearest manifest.
-    migrate-handoff updated to use basename $REPO_ROOT for <base>. Stale scripts/ copies
-    removed. All SKILL.md files updated. Global pre-commit exclusion updated to
-    **/.ctx/HANDOFF.*.*.yaml. Atelier HANDOFF file renamed accordingly.
-  files:
-  - bin/handoff-init
-  - bin/handoff-detect
-  - bin/migrate-handoff
-  - skills/handoff/references/schema.md
-  - skills/handoff/SKILL.md
-  - skills/handon/SKILL.md
-  - skills/handup/SKILL.md
-  - skills/handdown/SKILL.md
-  - skills/handover/SKILL.md
-  - .gitignore
-  - /Users/joe/.config/git/hooks/pre-commit
-  extra: []
-  completed: 2026-04-14
-- id: atelier-14
-  name: chmod-handoff-scripts-in-install
-  priority: P2
-  status: done
-  title: Add chmod +x for handoff scripts in plugin install step
-  description: |
-    handoff-detect.sh, migrate-handoff.sh, and handoff-db.sh need chmod +x in justfile
-    or a post-install hook so they are executable after reinstall. Resolved by moving
-    scripts to bin/ with chmod +x already set — plugin bin/ is added to PATH automatically.
-  files:
-  - bin/handoff-detect
-  - bin/handoff-db
-  - bin/migrate-handoff
-  extra: []
-  completed: 2026-04-13
-- id: atelier-15
-  name: bazaar-marketplace-and-install-fix
-  priority: P1
-  status: done
-  title: Create bazaar marketplace repo and fix plugin install pipeline
-  description: |
-    Plugin install was broken — atelier@local and atelier@atelier both failed due to missing
-    marketplace.json and wrong source conventions. Created 89jobrien/bazaar as a dedicated
-    marketplace repo with correct github source objects. Moved scripts to bin/ (added to PATH
-    by Claude Code automatically). All SKILL.md files updated to call bin commands directly.
-    pre-push hook and justfile now use atelier@bazaar. Install confirmed working end-to-end.
-  files:
-  - bin/handoff-detect
-  - bin/handoff-db
-  - bin/migrate-handoff
-  - .githooks/pre-push
-  - justfile
-  - skills/handoff/SKILL.md
-  - skills/handon/SKILL.md
-  - skills/handdown/SKILL.md
-  - skills/handover/SKILL.md
-  extra: []
-  completed: 2026-04-13
-
+  - id: atelier-13
+    name: propagate-ctx-handoff-to-other-repos
+    priority: P2
+    status: open
+    title: Propagate .ctx/HANDOFF naming convention to other repos
+    description: |
+      handoff-init + handoff-detect now handle auto-migration and gitignore management.
+      Run `handoff-detect --init` in each priority repo to trigger init: minibox, devloop,
+      doob, braid. Any root-level HANDOFF.*.yaml will be auto-renamed to the new convention.
+    files: []
+    extra: []
 log:
-- date: 2026-04-14
-  summary: >
-    Implemented HANDOFF.<name>.<base> naming convention (atelier-16): added handoff-init,
-    updated handoff-detect for lazy init + manifest-derived names, updated migrate-handoff,
-    removed stale skills/handoff/scripts/ copies, updated all SKILL.md state file refs,
-    fixed global pre-commit exclusion. Renamed .ctx/ HANDOFF to new convention.
-  commits:
-  - c68b72d
-  - 9f7f24e
-- date: 2026-04-13
-  summary: >
-    Resolved atelier-10 (7 sentinel suggestions + 5 observations). Fixed S1 (writing-solid-rust
-    skill reference), S2/S3 (replaced grep/find with rg/fd in handup/handdown), S4 (removed
-    minion from workshop skills list), S5 (minion now thin-wrapper), S7 (added hand clone to
-    onboard-atelier), O3 (documented forge/conductor permissionMode in CLAUDE.md), O5 (improved
-    justfile marketplace error handling). O1 (marketplace.json doesn't exist — fixed). Committed.
-  commits:
-  - 3473247
-- date: 2026-04-13
-  summary: >
-    Pulled 23 remote commits (bazaar marketplace, bin/ scripts, atelier-14/15 done); resolved
-    plugin.json and HANDOFF conflicts; added pre-push version-stamp hooks to sanctum and
-    orca-strait; switched both to @bazaar install; fixed global pre-commit cmd/**+internal/**
-    pathspec exclusions; updated CLAUDE.md with bazaar registration and obfsck gotchas.
-  commits:
-  - fa43d98
-  - 17669df
-  - a59a5e5
-  - 945499a
-  - 68857c3
-- date: 2026-04-13
-  summary: |
-    Fixed preflight shell detection: replaced `echo $SHELL` with `which nu zsh bash | head -1`
-    in all three CLAUDE.md files (~/.claude, ~/dev, atelier). Added CLAUDE.md note that
-    .ctx/HANDOFF.state.yaml is intentionally gitignored. Saved shell detection pattern to memory.
-  commits: []
-- date: 2026-04-13
-  summary: >
-    Explicitly excluded .ctx state/rendered files in .gitignore; removed duplicate HANDOVER.md
-    entry; confirmed HANDOFF.state.yaml already excluded via global gitignore.
-  commits:
-  - 0673ebe
-- date: 2026-04-13
-  summary: >
-    Created bazaar marketplace (89jobrien/bazaar) with github source objects; moved handoff
-    scripts to bin/ for PATH availability; fixed all SKILL.md script references; confirmed
-    atelier@bazaar install works end-to-end in pre-push hook.
-  commits:
-  - c27daa0
-  - 816e786
-  - 7ce3030
-  - 7cd3ee9
-  - 7465c4d
-- date: 2026-04-13
-  summary: >
-    Pulled 14 remote commits; resolved plugin.json conflict; fixed generate-diagrams.nu
-    get -o flags and hotspots block-beta diagram; fixed script path resolution via
-    known_marketplaces.json (later superseded by bin/ approach).
-  commits:
-  - e2b54f9
-  - 50e3eb2
-  - 1b68f25
-- date: 2026-04-13
-  summary: >
-    Completed .ctx/ HANDOFF migration (atelier-11), separated handup/handdown concerns with
-    HANDUP.json handoff and absolute paths (atelier-12); pushed 7e57557/0214fcc; reinstalled.
-  commits:
-  - 0a4fcd2
-  - 477a5a6
-  - 2432c98
-  - 7e57557
-  - 0214fcc
-- date: 2026-04-13
-  summary: >
-    Merged remote changes (13 commits ahead); resolved conflicts taking remote; fixed B3
-    (circular symlinks removed), B4 (pre-push restored), B1/O5 (justfile atelier@local);
-    sentinel review run; all blocking issues resolved; pushed 63bca6e.
-  commits:
-  - c029464
-  - 3789cc6
-  - 43c47a2
-  - 63bca6e
-  - f632ee4
-- date: 2026-04-05
-  summary: >
-    atelier-8 done — coursers Rust binary extracted from nu hooks; initial commit pushed
-    to GitHub; obfsck allowlist updated; Cargo.lock excluded from global pre-commit scan.
-  commits:
-  - ca7ffdc
+  - date: 2026-04-16
+    summary: >
+      Updated plugin release metadata and added Codex mirror support: documented the local
+      Codex install flow, added bin/sync-codex and bin/infer-json-schema.jq, and added
+      OpenAI agent manifests for the maintained skills.
+    commits:
+      - 2882682
+      - 1775c15
+  - date: 2026-04-14
+    summary: >
+      Implemented HANDOFF.<name>.<base> naming convention (atelier-16): added handoff-init,
+      updated handoff-detect for lazy init + manifest-derived names, updated migrate-handoff,
+      removed stale skills/handoff/scripts/ copies, updated all SKILL.md state file refs,
+      fixed global pre-commit exclusion. Renamed .ctx/ HANDOFF to new convention.
+    commits:
+      - c68b72d
+      - 9f7f24e
+  - date: 2026-04-13
+    summary: >
+      Resolved atelier-10 (7 sentinel suggestions + 5 observations). Fixed S1
+      (writing-solid-rust skill reference), S2/S3 (replaced grep/find with rg/fd in
+      handup/handdown), S4 (removed minion from workshop skills list), S5 (minion now
+      thin-wrapper), S7 (added hand clone to onboard-atelier), O3 (documented
+      forge/conductor permissionMode in CLAUDE.md), O5 (improved justfile marketplace error
+      handling). O1 (marketplace.json doesn't exist — fixed). Committed.
+    commits:
+      - 3473247
+  - date: 2026-04-13
+    summary: >
+      Pulled 23 remote commits (bazaar marketplace, bin/ scripts, atelier-14/15 done);
+      resolved plugin.json and HANDOFF conflicts; added pre-push version-stamp hooks to
+      sanctum and orca-strait; switched both to @bazaar install; fixed global pre-commit
+      cmd/**+internal/** pathspec exclusions; updated CLAUDE.md with bazaar registration and
+      obfsck gotchas.
+    commits:
+      - fa43d98
+      - 17669df
+      - a59a5e5
+      - 945499a
+      - 68857c3
+  - date: 2026-04-13
+    summary: |
+      Fixed preflight shell detection: replaced `echo $SHELL` with `which nu zsh bash | head -1`
+      in all three CLAUDE.md files (~/.claude, ~/dev, atelier). Added CLAUDE.md note that
+      .ctx/HANDOFF.state.yaml is intentionally gitignored. Saved shell detection pattern to memory.
+    commits: []
+  - date: 2026-04-13
+    summary: >
+      Explicitly excluded .ctx state/rendered files in .gitignore; removed duplicate
+      HANDOVER.md entry; confirmed HANDOFF.state.yaml already excluded via global gitignore.
+    commits:
+      - 0673ebe
+  - date: 2026-04-13
+    summary: >
+      Created bazaar marketplace (89jobrien/bazaar) with github source objects; moved
+      handoff scripts to bin/ for PATH availability; fixed all SKILL.md script references;
+      confirmed atelier@bazaar install works end-to-end in pre-push hook.
+    commits:
+      - c27daa0
+      - 816e786
+      - 7ce3030
+      - 7cd3ee9
+      - 7465c4d
+  - date: 2026-04-13
+    summary: >
+      Pulled 14 remote commits; resolved plugin.json conflict; fixed generate-diagrams.nu
+      get -o flags and hotspots block-beta diagram; fixed script path resolution via
+      known_marketplaces.json (later superseded by bin/ approach).
+    commits:
+      - e2b54f9
+      - 50e3eb2
+      - 1b68f25
+  - date: 2026-04-13
+    summary: >
+      Completed .ctx/ HANDOFF migration (atelier-11), separated handup/handdown concerns
+      with HANDUP.json handoff and absolute paths (atelier-12); pushed 7e57557/0214fcc;
+      reinstalled.
+    commits:
+      - 0a4fcd2
+      - 477a5a6
+      - 2432c98
+      - 7e57557
+      - 0214fcc
+  - date: 2026-04-13
+    summary: >
+      Merged remote changes (13 commits ahead); resolved conflicts taking remote; fixed B3
+      (circular symlinks removed), B4 (pre-push restored), B1/O5 (justfile atelier@local);
+      sentinel review run; all blocking issues resolved; pushed 63bca6e.
+    commits:
+      - c029464
+      - 3789cc6
+      - 43c47a2
+      - 63bca6e
+      - f632ee4
+  - date: 2026-04-05
+    summary: >
+      atelier-8 done — coursers Rust binary extracted from nu hooks; initial commit pushed
+      to GitHub; obfsck allowlist updated; Cargo.lock excluded from global pre-commit scan.
+    commits:
+      - ca7ffdc
