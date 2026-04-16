@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Onboard"
+  short_description: "Set up and validate the atelier plugin"
+  default_prompt: "Use $atelier-onboard-atelier to install, validate, and explain the local atelier plugin setup on this machine."

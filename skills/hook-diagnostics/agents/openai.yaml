@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Hook Diagnostics"
+  short_description: "Inspect hook runs and explain failures"
+  default_prompt: "Use $atelier-hook-diagnostics to inspect the recent hook execution path and explain any failures or skipped steps."

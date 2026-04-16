@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Handup"
+  short_description: "Survey nested repos for open work"
+  default_prompt: "Use $atelier-handup to survey this directory tree for HANDOFF files, TODOs, and the highest-priority open work."

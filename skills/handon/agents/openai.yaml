@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Handon"
+  short_description: "Orient to the current repo at session start"
+  default_prompt: "Use $atelier-handon to read this repo's current HANDOFF context and surface the most important work to start with."

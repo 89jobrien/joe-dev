@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Handdown"
+  short_description: "Write cross-project findings back to handoffs"
+  default_prompt: "Use $atelier-handdown to persist the current cross-project findings back into the relevant HANDOFF files."

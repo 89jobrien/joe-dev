@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Cargo Gate"
+  short_description: "Run Rust gates and pre-commit checks"
+  default_prompt: "Use $atelier-cargo-gate to run the repo's Rust validation gates and summarize any failures."

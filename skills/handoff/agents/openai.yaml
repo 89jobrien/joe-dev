@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Handoff"
+  short_description: "Capture end-of-session HANDOFF updates"
+  default_prompt: "Use $atelier-handoff to update this repo's HANDOFF artifacts with current status, completed work, and next steps."

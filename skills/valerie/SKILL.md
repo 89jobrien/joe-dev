@@ -1,6 +1,7 @@
 ---
 name: valerie
-description: Task and todo management specialist. Use PROACTIVELY when users mention tasks,
+description:
+  Task and todo management specialist. Use PROACTIVELY when users mention tasks,
   todos, project tracking, task completion, or ask what to work on next. Also use when
   parsing council analysis reports, HANDOFF files, or any structured recommendation
   source into doob todos — including auditing doob against HANDOFF context and writing
@@ -66,7 +67,7 @@ shell: sh | nu
 configured: YYYY-MM-DD
 ```
 
-If no — skip setup and assume `backend: doob`, `shell: sh`. Remind the user they can
+If no — skip setup and assume `backend: doob`, `shell: nu`. Remind the user they can
 run setup later.
 
 After setup, read the config and use the chosen backend for all commands in this session.
@@ -196,11 +197,11 @@ need to debug a mismatch.
 1. Run the configured GitHub issue sync into `doob`
 2. Read HANDOFF — collect all open/blocked item IDs and titles
 3. Run `doob todo list -p <project> --json` — collect all pending/in-progress todos
-3. Cross-reference:
+4. Cross-reference:
    - HANDOFF items with no matching todo → **not captured**
    - Todos with no matching HANDOFF item → **orphaned** (may be from council reports)
    - Todos/issues marked complete or closed while HANDOFF item still exists → **prune from HANDOFF**
-4. Report the reconciliation table:
+5. Report the reconciliation table:
 
 ```
 Reconciliation — <project>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Minion"
+  short_description: "Delegate bounded execution work cleanly"
+  default_prompt: "Use $atelier-minion to break this task into a bounded delegated unit with clear ownership and outputs."

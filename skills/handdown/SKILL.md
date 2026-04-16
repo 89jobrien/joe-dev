@@ -220,4 +220,6 @@ already captured." Do not create empty log entries.
 (merge conflict, detached HEAD), report the error and skip that repo's commit without
 failing the others.
 
-**SQLite not available:** Skip sync step, note in output, continue. YAML is the source of truth.
+**SQLite not available:** Skip sync step, note in output, continue. SQLite is the shared local
+store for non-Valerie skills; HANDOFF `items` remain the transient committed context layer and
+HANDOFF `log` remains durable history.

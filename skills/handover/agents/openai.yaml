@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Handover"
+  short_description: "Render reports and diagrams from handoffs"
+  default_prompt: "Use $atelier-handover to generate a concise report and diagrams from the current repo's HANDOFF file."

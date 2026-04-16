@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Project Pulse"
+  short_description: "Capture session state before you stop"
+  default_prompt: "Use $atelier-project-pulse to summarize the current project state and capture the session checkpoint before stopping."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Git Guard"
+  short_description: "Check commit and merge safety first"
+  default_prompt: "Use $atelier-git-guard to assess the current git state and recommend the safest next commit or merge action."

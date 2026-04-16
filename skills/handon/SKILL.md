@@ -23,6 +23,10 @@ Scan the current directory tree for handoff files, parse items by priority, and 
 | P1       | Execute autonomously. Stop only if scope expands or something unexpected happens. |
 | P2       | Delegate to subagents. Cap at 5 concurrent.                                       |
 
+`handon` should use HANDOFF YAML plus `handoff-db`/SQLite only. Do not call `doob` here;
+`valerie` is the only skill that should touch `doob` or GitHub issue sync. Treat `items` as
+transient open-work context and `log` as durable completed-work history.
+
 ## Steps
 
 ### 0. Load local config
@@ -164,9 +168,9 @@ P2:
 
 Then update `HANDOFF.yaml`:
 
-- Mark done items `status: done`, add `completed: <today>`
+- Remove any item that was completed or closed upstream so `items` only carry open context
 - Add `log` entry for this session (one-liner, prepend to list)
-- Upsert all items to SQLite via `handoff-db.sh upsert` (see handoff skill step 6)
+- Upsert remaining open/blocked items to SQLite via `handoff-db.sh upsert` (see handoff skill step 6)
 - Commit: `git add .ctx/HANDOFF.<project>.*.yaml && git commit -m "docs: update handoff"`
 
 ## Edge Cases
@@ -177,7 +181,8 @@ Then update `HANDOFF.yaml`:
 **HANDOFF.md only:** Read it, triage as normal, note at end: "Consider migrating to HANDOFF.yaml
 for structured triage."
 
-**All items done or parked:** Report clean state, no action needed.
+**All items done or parked:** Report clean state, no action needed. Closed items should be
+pruned from `items` on the next write; `log` remains as history.
 
 **Blocked item:** Do not attempt. Report the blocker to user verbatim from the `description`
 field.

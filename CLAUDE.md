@@ -26,13 +26,13 @@ atelier/
 ├── .claude-plugin/plugin.json   # Plugin manifest (name, version, skills, agents)
 ├── skills/                      # 12 skills — procedural markdown guides for Claude
 ├── agents/                      # 5 agents — thin wrappers that delegate to devkit
-├── bin/                         # handoff-detect, handoff-init, handoff-db, migrate-handoff
+├── bin/                         # handoff-detect, handoff-init, handoff-db, handoff-reconcile, migrate-handoff
 ├── docs/design.md               # Authoritative design spec
 └── justfile                     # Setup automation
 ```
 
 `bin/` is added to PATH automatically by Claude Code when the plugin is installed. Scripts there
-are callable directly: `handoff-detect`, `handoff-init`, `handoff-db`, `migrate-handoff`.
+are callable directly: `handoff-detect`, `handoff-init`, `handoff-db`, `handoff-reconcile`, `migrate-handoff`.
 
 ### Skills (12)
 
@@ -84,7 +84,8 @@ first use — it runs lazily via `handoff-detect` and never needs to be called d
 
 Items have immutable `id`/`title`/`description`/`priority` (P0/P1/P2) and mutable `status`
 (open/done/parked/blocked). The log section prepends newest-first. Items also sync to
-`~/.local/share/atelier/handoff.db` (SQLite) for cross-session queries.
+`~/.local/share/atelier/handoff.db` (SQLite) for cross-session queries, and `handoff-reconcile`
+is the scripted bridge that captures open HANDOFF items into the authoritative `doob` backlog.
 
 ## Key Design Rules
 
@@ -115,6 +116,18 @@ per machine before any `@bazaar` install: `claude plugin marketplace add https:/
 2. `sanctum` hands off to `atelier:handon` → triages `.ctx/HANDOFF.<name>.<base>.yaml` by priority
 3. Work happens using skills (`cargo-gate`, `git-guard`, `ci-assist`, etc.)
 4. Session ends → `project-pulse` captures state snapshot → `handoff` writes `.ctx/HANDOFF` files
+
+## Valerie Setup
+
+`setup.nu` uses `input` and requires an interactive terminal — it fails in Claude Code's
+non-interactive context. Write the config directly instead:
+
+```yaml
+# ~/.claude/plugins/cache/local/atelier/<version>/.claude-plugin/valerie.local.yaml
+backend: doob
+shell: nu
+configured: YYYY-MM-DD
+```
 
 ## Adding or Editing Skills
 

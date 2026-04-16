@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Valerie"
+  short_description: "Manage todos and task capture flows"
+  default_prompt: "Use $atelier-valerie to triage tasks, update todo state, and capture new work from the current project context."

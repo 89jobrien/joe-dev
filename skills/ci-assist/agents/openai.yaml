@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier CI Assist"
+  short_description: "Debug and edit CI workflows safely"
+  default_prompt: "Use $atelier-ci-assist to inspect this repo's CI setup, diagnose failures, and make the required workflow changes."

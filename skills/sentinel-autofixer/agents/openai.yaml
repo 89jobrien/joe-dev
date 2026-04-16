@@ -1,0 +1,4 @@
+interface:
+  display_name: "Atelier Sentinel Autofixer"
+  short_description: "Apply fixes from review findings"
+  default_prompt: "Use $atelier-sentinel-autofixer to apply concrete fixes for the current review findings without widening scope."

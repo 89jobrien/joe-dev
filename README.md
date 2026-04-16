@@ -15,6 +15,16 @@ Requires `sanctum` for the session-start hook chain:
 claude plugin add github:89jobrien/sanctum
 ```
 
+For local repo development, use:
+
+```bash
+cd ~/dev/atelier
+just init
+```
+
+That keeps the Claude plugin installed and also mirrors `skills/`, `bin/`, and the repo root
+into Codex-visible locations on machines that have `~/.codex/`.
+
 ## Skills
 
 | Skill              | Trigger Phrases                                                   |
@@ -47,6 +57,8 @@ claude plugin add github:89jobrien/sanctum
 - `cargo-gate` runs `cargo xtask pre-commit` first — the xtask gate always takes priority.
 - `sanctum` must also be installed for the session-start op-resolver + handon chain.
 - All agents are thin wrappers; devkit must be installed and accessible.
+- `just reinstall` also runs `bin/sync-codex`, which symlinks the repo into `~/.codex/plugins/atelier`,
+  symlinks each skill into `~/.codex/skills/atelier-*`, and symlinks `bin/*` into `~/.local/bin`.
 - Skills with scripts (`handoff`, `handover`) resolve them from the plugin cache at runtime via
   version-sorted glob — bumping `version` in `plugin.json` + `just reinstall` is sufficient to
   pick up new scripts.

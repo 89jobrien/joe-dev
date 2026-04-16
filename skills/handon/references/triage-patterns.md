@@ -118,13 +118,14 @@ When SQLite status differs from YAML status for the same item:
 
 | YAML status | SQLite status | Resolution |
 |---|---|---|
-| open | done | Trust SQLite — mark done in memory |
-| done | open | Trust YAML — SQLite likely stale; note discrepancy |
+| open | done | Trust SQLite — suppress the item in memory and prune it on next write |
+| done | open | Treat as discrepancy — prefer keeping it closed unless user confirms reopen |
 | open | blocked | Trust SQLite — more recent signal |
 | blocked | open | Trust YAML — SQLite may not have the blocker info |
 
-General rule: trust SQLite for `done` and `blocked` (terminal states set by tools).
-Trust YAML for `open` (YAML is the canonical source). Do not write back to YAML here.
+General rule: trust SQLite for resolved/blocked state when it reflects newer tool activity.
+Use YAML `items` for extra local context on work that is still open. YAML is not the canonical
+backlog. The YAML `log` is durable history. Do not write back to YAML here.
 
 ## Edge: All Items Done or Parked
 
@@ -134,6 +135,8 @@ Report cleanly and stop:
 ## Handoff Triage — <repo>
 
 All items are done or parked. No action needed.
+
+Closed items should be pruned from HANDOFF `items` on the next write. Keep `log` entries.
 
 Last log entry: <date> — <summary>
 ```

@@ -31,6 +31,12 @@ init:
     claude plugin install atelier@bazaar
     echo "    plugin: atelier installed"
 
+    # 5. Mirror into Codex if available on this machine
+    if [ -d "${CODEX_HOME:-$HOME/.codex}" ]; then
+        ./bin/sync-codex
+        echo "    codex: atelier mirrored"
+    fi
+
     echo ""
     echo "==> Done. Restart Claude Code to apply."
     echo "    Tip: also run 'just init' in ~/dev/sanctum for the companion plugin."
@@ -38,7 +44,16 @@ init:
 # Reinstall plugin without re-running full init
 reinstall:
     #!/usr/bin/env bash
+    set -euo pipefail
     claude plugin marketplace update bazaar 2>/dev/null || true
     claude plugin uninstall atelier --force 2>/dev/null || true
     claude plugin install atelier@bazaar
+    if [ -d "${CODEX_HOME:-$HOME/.codex}" ]; then
+        ./bin/sync-codex
+    fi
     echo "[atelier] reinstalled — restart Claude Code to apply"
+
+sync-codex:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    ./bin/sync-codex

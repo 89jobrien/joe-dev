@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+CODEX_HOME="${CODEX_HOME:-$HOME/.codex}"
+PLUGIN_DIR="$CODEX_HOME/plugins"
+SKILLS_DIR="$CODEX_HOME/skills"
+BIN_DIR="$HOME/.local/bin"
+
+mkdir -p "$PLUGIN_DIR" "$SKILLS_DIR" "$BIN_DIR"
+
+# Mirror the plugin checkout so Codex-side tooling can inspect the same source tree.
+ln -sfn "$ROOT" "$PLUGIN_DIR/atelier"
+
+replace_managed_skill_link() {
+  local source_dir="$1"
+  local dest_path="$2"
+
+  # Earlier installs created real directories under ~/.codex/skills/atelier-*.
+  # Remove only atelier-managed entries so parity is enforced via symlinks.
+  if [ -e "$dest_path" ] || [ -L "$dest_path" ]; then
+    rm -rf "$dest_path"
+  fi
+
+  ln -s "$source_dir" "$dest_path"
+}
+
+repo_skill_names=()
+for skill_dir in "$ROOT"/skills/*; do
+  [ -d "$skill_dir" ] || continue
+
+  skill_name="$(basename "$skill_dir")"
+  if [ "$skill_name" = ".claude-plugin" ]; then
+    continue
+  fi
+
+  codex_skill_name="atelier-$skill_name"
+  replace_managed_skill_link "$skill_dir" "$SKILLS_DIR/$codex_skill_name"
+  repo_skill_names+=("$codex_skill_name")
+done
+
+for existing in "$SKILLS_DIR"/atelier-*; do
+  [ -e "$existing" ] || continue
+
+  base="$(basename "$existing")"
+  keep=false
+  for repo_skill_name in "${repo_skill_names[@]}"; do
+    if [ "$repo_skill_name" = "$base" ]; then
+      keep=true
+      break
+    fi
+  done
+
+  if [ "$keep" = false ]; then
+    rm -rf "$existing"
+  fi
+done
+
+for cmd in "$ROOT"/bin/*; do
+  [ -f "$cmd" ] || continue
+  chmod +x "$cmd"
+  ln -sfn "$cmd" "$BIN_DIR/$(basename "$cmd")"
+done
+
+echo "[atelier] codex mirror updated"
+echo "  plugin: $PLUGIN_DIR/atelier -> $ROOT"
+echo "  skills: $SKILLS_DIR/atelier-*"
+echo "  bin:    $BIN_DIR/{handoff-db,handoff-detect,handoff-init,handoff-reconcile,migrate-handoff,sync-codex}"
