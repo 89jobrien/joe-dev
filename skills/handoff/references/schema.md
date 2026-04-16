@@ -2,6 +2,12 @@
 
 ## HANDOFF.yaml
 
+HANDOFF splits active context from history. `items` are transient context for open work, while
+`log` is durable completed-work history. GitHub issues, reconciled through `valerie` and
+`doob`, are the authoritative backlog. SQLite via `handoff-db` is the local query/store used
+by non-Valerie skills. `handoff-reconcile` is the scripted bridge that captures open HANDOFF
+items into the authoritative backlog.
+
 ```yaml
 project: <name>
 id: <prefix> # first 7 chars of project name, used for item IDs
@@ -11,7 +17,7 @@ items:
   - id: <prefix>-<n> # sequential integer from 1, no leading zeros, never reuse
     name: <kebab-slug> # immutable after creation
     priority: P0 | P1 | P2 # immutable after creation
-    status: open | done | parked | blocked # mutable
+    status: open | done | parked | blocked # mutable; prune done/parked before commit
     title: <one-line> # immutable after creation
     description: <detail> # immutable after creation, null ok
     files: [<path>] # immutable after creation, omit if empty
@@ -26,14 +32,18 @@ items:
 
 log:
   - date: <YYYY-MM-DD>
-    summary: <one-liner of what happened>
-    commits: [<short-hash>] # optional
+    summary: <one-liner of what finished or changed>
+    commits: [<short-hash>] # optional, recommended for finished work
 ```
 
 ## Immutability Rules
 
 Only `status` and `extra` may change after creation. For materially changed scope, create a
 new item and park the old one.
+
+Committed HANDOFF files should normally contain only `open` and `blocked` items. `done` and
+`parked` are transitional states during reconciliation and should be pruned from `items`
+after sync. Preserve `log` history.
 
 | Field         | Immutable?                  |
 | ------------- | --------------------------- |
@@ -46,6 +56,13 @@ new item and park the old one.
 | `status`      | no — only mutable field     |
 | `extra`       | append-only                 |
 | `completed`   | set once when status → done |
+
+## Log Semantics
+
+- `log` is durable and should remain in committed HANDOFF files
+- Use one line per finished work item or meaningful session outcome
+- Include commit hashes when known for finished work
+- Do not treat `log` as transient state
 
 ## Priority Guide
 
@@ -90,9 +107,9 @@ Extend freely with project-specific facts (e.g. `rust_edition`, `open_prs`, `las
 
 | File                                          | Location | Committed | Purpose                        |
 | --------------------------------------------- | -------- | --------- | ------------------------------ |
-| `.ctx/HANDOFF.<name>.<base>.yaml`             | `.ctx/`  | yes       | Tasks, items, log              |
+| `.ctx/HANDOFF.<name>.<base>.yaml`             | `.ctx/`  | yes       | Open-work context, items, log  |
 | `.ctx/HANDOFF.<name>.<base>.state.yaml`       | `.ctx/`  | no        | Project/package snapshot       |
-| `.ctx/HANDOFF.md`                             | `.ctx/`  | no        | Generated reference doc        |
+| `.ctx/HANDOFF.md`                             | `.ctx/`  | no        | Generated current-context doc  |
 | `.ctx/.initialized`                           | `.ctx/`  | no        | Init token (date of last init) |
 | `.ctx/handoff.<project>.config.toml`          | `.ctx/`  | no        | Local runtime vars (user-owned)|
 | `.ctx/handoff.<project>.config.toml.example`  | `.ctx/`  | yes       | Committed template for config  |
@@ -102,9 +119,9 @@ Extend freely with project-specific facts (e.g. `rust_edition`, `open_prs`, `las
 ```
 # handoff-begin
 .ctx/*
-!.ctx/HANDOFF.*.*.yaml
+!.ctx/HANDOFF.*.yaml
+.ctx/HANDOFF.*.state.yaml
 !.ctx/handoff.*.config.toml.example
-.ctx/HANDOFF.<name>.<base>.state.yaml   # one line per package
 .ctx/.initialized
 # handoff-end
 ```

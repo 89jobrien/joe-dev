@@ -133,10 +133,9 @@ trap 'rm -f "$PKGS_TMP" "$BLOCK_TMP"' EXIT
 {
     echo "# handoff-begin"
     echo ".ctx/*"
-    echo "!.ctx/HANDOFF.*.*.yaml"
-    for pkg in $PACKAGES; do
-        echo ".ctx/HANDOFF.${pkg}.${BASE}.state.yaml"
-    done
+    echo "!.ctx/HANDOFF.*.yaml"
+    echo ".ctx/HANDOFF.*.state.yaml"
+    echo "!.ctx/handoff.*.config.toml.example"
     echo ".ctx/.initialized"
     echo "# handoff-end"
 } > "$BLOCK_TMP"

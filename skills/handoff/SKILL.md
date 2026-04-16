@@ -17,10 +17,14 @@ allowed-tools:
 
 ## Overview
 
-`HANDOFF.yaml` is the committed source of truth for task/workflow tracking. Item status is also
-mirrored to a local SQLite database for cross-session queries without parsing YAML.
-Project state (build, tests, branch) lives separately in `.ctx/HANDOFF.<name>.<base>.state.yaml`
-— generated, never committed. A rendered reference doc is also written to `.ctx/HANDOFF.md`.
+`HANDOFF.yaml` is split in two: `items` are the committed short-lived context layer for
+still-open work, while `log` is the durable one-line history of finished work. GitHub issues,
+reconciled through `valerie` and `doob`, are the active-work source of truth. Non-Valerie
+skills should use the local SQLite database via `handoff-db` plus HANDOFF YAML, never `doob`
+directly. The scripted bridge from HANDOFF into the backlog is `handoff-reconcile`; use that
+instead of reconstructing `doob` commands by hand. Project state (build, tests, branch) lives separately in
+`.ctx/HANDOFF.<name>.<base>.state.yaml` — generated, never committed. A rendered reference doc
+is also written to `.ctx/HANDOFF.md`.
 
 See `references/schema.md` for the full YAML schema, immutability rules, priority guide,
 and file layout.
@@ -57,16 +61,18 @@ cargo test 2>&1 | tail -5
 
 **`items`** — apply immutability rules (see `references/schema.md`):
 - New gap → append with new `id`
-- Completed → set `status: done`, add `completed: <today>`
+- Completed or closed upstream → remove the item from `items` after recording the outcome in
+  `log`
 - Blocked → set `status: blocked`, append `extra` entry with `type: blocker`
 - Do NOT edit title, description, priority, or files on existing items
-- Do NOT delete done items — prune only when list >15 and done items are >2 sessions old
+- Do NOT retain done or parked items in committed `items`
 
 **`human-edit` acknowledgement** — for any `extra` entry with `type: human-edit` and no
 `reviewed` field that was surfaced by `handon` this session, add `reviewed: <today>` to that
 entry.
 
-**`log`** — prepend a new entry (newest first). One line, past tense. Include commit hashes.
+**`log`** — prepend a new entry (newest first). This section is durable, not transient. Use one
+line, past tense, and include commit hashes for finished work when known.
 
 **`updated`** — set to today.
 
@@ -97,6 +103,24 @@ handoff-db upsert --project <project> --handoff <path-to-HANDOFF.yaml>
 
 If the script is not found or exits non-zero, skip and note it in output.
 
+Do not call `doob` from this skill. `valerie` owns `doob` and GitHub issue sync.
+
+### 6b. Reconcile open HANDOFF items into the backlog
+
+Run the scripted Valerie bridge:
+
+```bash
+handoff-reconcile sync --project <project> --handoff <path-to-HANDOFF.yaml>
+```
+
+This is required. A handoff update is not complete until every open or blocked HANDOFF item has
+been reconciled into the configured `doob` backend through this command. Do not recreate this
+flow with ad hoc `doob todo add` / `doob todo list` commands unless you are debugging the
+reconciler itself.
+
+If the script is not found or exits non-zero, stop and report the failure instead of silently
+continuing.
+
 ### 7. Generate .ctx/HANDOFF.md
 
 Render a combined reference doc from both files. Overwrite completely.
@@ -119,7 +143,7 @@ Render a combined reference doc from both files. Overwrite completely.
 ```
 
 Rules:
-- Items sorted P0 → P2, open before done/parked/blocked
+- Items sorted P0 → P2, open before blocked
 - Log: last 5 entries only
 - No diagrams — those are for `/atelier:handover`
 
@@ -129,6 +153,7 @@ Verify `.gitignore` has:
 ```
 .ctx/*
 !.ctx/HANDOFF.*.yaml
+.ctx/HANDOFF.*.state.yaml
 ```
 
 Add or update if not present. This pattern ignores all `.ctx/` contents except HANDOFF files.
@@ -146,11 +171,12 @@ Then stage the rename and continue with the new `.ctx/` path.
 ### 10. Commit
 
 ```bash
-git add .ctx/HANDOFF.<project>.*.yaml
+git add <path-to-HANDOFF.yaml> .gitignore
 git commit -m "docs: update handoff"
 ```
 
-Stage only the HANDOFF file under `.ctx/`. Never stage anything else under `.ctx/`.
+Stage only the durable HANDOFF file under `.ctx/` plus any `.gitignore` update required for the
+managed block. Never stage `.ctx/HANDOFF.*.state.yaml` or `.ctx/HANDOFF.md`.
 
 ## Creating from Scratch
 
@@ -162,7 +188,8 @@ git status
 ```
 
 Populate `log` from recent commits. Leave `items` empty or with one P1 if there's an obvious
-next step. Write `.ctx/HANDOFF.<name>.<base>.state.yaml` from actual build/test output.
+open next step. Do not backfill closed work into `items`, but do preserve durable `log`
+history. Write `.ctx/HANDOFF.<name>.<base>.state.yaml` from actual build/test output.
 
 Place the new HANDOFF file at `.ctx/HANDOFF.<name>.<base>.yaml` where `<name>` is the
 package/crate name from the nearest manifest and `<base>` is the repo root dir name.
