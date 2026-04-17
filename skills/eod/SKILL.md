@@ -15,11 +15,24 @@ Two-phase closing ritual: parallel handoff across all active repos, then daily n
 
 ## Step 1 — Identify Active Repos
 
-Active = any repo with commits in the past 24 hours. Check the allowlist only:
+Active = any repo with commits in the past 24 hours. Discover repos dynamically — do not
+hardcode names. Find all git repos under `$HOME/dev` and filter to those with recent activity:
 
 ```bash
-for repo in braid crux devkit devloop doob dotfiles harvestrs joe-dev joe-secrets kan maestro \
-  magi mcpipe minibox notfiles obfsck personal-mcp pieces-ob rx slash steve; do
+ls $HOME/dev | each { |repo|
+  let path = ($"($env.HOME)/dev/($repo)")
+  if ($"($path)/.git" | path exists) {
+    let out = (do { git -C $path log --since="24 hours ago" --oneline -1 } | complete)
+    if ($out.stdout | str trim | is-not-empty) { $repo }
+  }
+} | compact
+```
+
+Or in POSIX sh (fallback):
+
+```bash
+for repo in $(ls "$HOME/dev"); do
+  [ -d "$HOME/dev/$repo/.git" ] || continue
   git -C "$HOME/dev/$repo" log --since="24 hours ago" --oneline -1 2>/dev/null | \
     grep -q . && echo "$repo"
 done
