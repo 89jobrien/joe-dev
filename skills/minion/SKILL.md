@@ -6,10 +6,11 @@ description:
   task that doesn't require a specialized agent. Invoke via the Agent tool with
   subagent_type "atelier:minion".
 model: haiku
+agent: minion
 effort: low
 argument-hint: "[task description]"
 allowed-tools:
-  - Agent
+  - Agent(minion)
   - Read
   - Bash
 ---
