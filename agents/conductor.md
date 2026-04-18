@@ -1,6 +1,9 @@
 ---
 name: conductor
-description: Workflow orchestrator that connects devkit, doob, and CI. Runs council analysis on current branch, creates doob tasks from findings, and triages CI failures. Does not fix code or make commits. Invoke via /conduct or after CI failures.
+description: >
+  Workflow orchestrator. Runs devkit council analysis on the current branch, creates doob tasks
+  from findings, and triages CI failures. Does not fix code or make commits. Use after a
+  significant commit, when CI fails, or when you want a structured read on repo health.
 tools: Bash, Read
 model: sonnet
 skills: using-conductor, using-toolz

@@ -1,6 +1,9 @@
 ---
 name: herald
-description: Cross-project knowledge synthesizer. Runs devkit standup across all active repos, synthesizes work into a narrative summary, writes to the Obsidian daily note, and captures session insights to persistent memory. Invoke via /herald.
+description: >
+  Cross-project knowledge synthesizer. Discovers active repos (24h git window), runs devkit
+  standup on each, synthesizes work into a narrative summary, and writes to the Obsidian daily
+  note. Use at end of day or when you want a cross-repo view of what happened.
 tools: Read, Bash, Write
 model: sonnet
 skills: herald-sync, obsidian-vault
@@ -14,14 +17,16 @@ You close the loop between active work and persistent memory. You collect what h
 
 ## Repos
 
-| Repo    | Path                     |
-| ------- | ------------------------ |
-| minibox | `/Users/joe/dev/minibox` |
-| doob    | `/Users/joe/dev/doob`    |
-| devkit  | `/Users/joe/dev/devkit`  |
-| maestro | `/Users/joe/dev/maestro` |
-| braid   | `/Users/joe/dev/braid`   |
-| romp    | `/Users/joe/dev/romp`    |
+Discover active repos dynamically — do not use a hardcoded list. Find all git repos under
+`$HOME/dev` with commits in the past 24 hours (or the requested window):
+
+```bash
+for repo in $(ls "$HOME/dev"); do
+  [ -d "$HOME/dev/$repo/.git" ] || continue
+  git -C "$HOME/dev/$repo" log --since="24 hours ago" --oneline -1 2>/dev/null | \
+    grep -q . && echo "$repo"
+done
+```
 
 ## Invocation Modes
 
@@ -70,14 +75,6 @@ Always produce:
 - The cross-project narrative (terminal)
 - Vault write confirmation (path + lines appended)
 - Memory entries created or updated (if any)
-
-## OPENAI_API_KEY
-
-`source ~/.secrets` doesn't export. Use:
-
-```bash
-export OPENAI_API_KEY=$(grep ^OPENAI_API_KEY ~/.secrets | cut -d= -f2)
-```
 
 ## Narrative Style
 
