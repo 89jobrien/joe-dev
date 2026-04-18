@@ -87,7 +87,7 @@ case "$CMD" in
         [ -f "$HANDOFF_PATH" ] || { echo "error: file not found: $HANDOFF_PATH" >&2; exit 3; }
 
         _init_db
-        NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        NOW=$(date -u +%Y%m%d:%H%M%SZ)
         COUNT=$(yq '.items | length' "$HANDOFF_PATH")
 
         if [ "$COUNT" -eq 0 ]; then
@@ -102,10 +102,12 @@ case "$CMD" in
         while [ "$j" -lt "$LOG_COUNT" ]; do
             log_date=$(yq ".log[$j].date" "$HANDOFF_PATH")
             session=$(  yq ".log[$j].session" "$HANDOFF_PATH")
-            # Bare date check: YYYY-MM-DD with no time component
+            # Bare date check: must match YYYYMMDD:HHMMSSZ — warn if it doesn't
             case "$log_date" in
-                [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9])
-                    echo "warning: log[$j].date '$log_date' is a bare date — use ISO 8601 datetime (YYYY-MM-DDTHH:MM:SSZ)" >&2
+                [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]:[0-9][0-9][0-9][0-9][0-9][0-9]Z)
+                    : ;; # valid
+                *)
+                    echo "warning: log[$j].date '$log_date' is not YYYYMMDD:HHMMSSZ format" >&2
                     log_warnings=$(( log_warnings + 1 ))
                     ;;
             esac
@@ -197,7 +199,7 @@ case "$CMD" in
         [ -n "$PROJECT" ]  || die "--project is required"
         [ -n "$ITEM_ID" ]  || die "--id is required"
         _init_db
-        NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        NOW=$(date -u +%Y%m%d:%H%M%SZ)
         sqlite3 "$DB" \
             "UPDATE items SET status='done', completed='${NOW}', updated='${NOW}'
              WHERE project='${PROJECT}' AND id='${ITEM_ID}';"
@@ -226,7 +228,7 @@ case "$CMD" in
         done
         [ "$status_valid" -eq 0 ] && die "unknown status '$NEW_STATUS' (valid: $VALID_STATUSES)"
         _init_db
-        NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+        NOW=$(date -u +%Y%m%d:%H%M%SZ)
         sqlite3 "$DB" \
             "UPDATE items SET status='${NEW_STATUS}', updated='${NOW}'
              WHERE project='${PROJECT}' AND id='${ITEM_ID}';"
