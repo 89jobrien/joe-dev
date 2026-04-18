@@ -11,29 +11,34 @@ items into the authoritative backlog.
 ```yaml
 project: <name>
 id: <prefix> # first 7 chars of project name, used for item IDs
-updated: <YYYY-MM-DD>
+updated: <YYYY-MM-DDTHH:MM:SSZ> # ISO 8601 datetime, always with time and Z suffix
 
 items:
   - id: <prefix>-<n> # sequential integer from 1, no leading zeros, never reuse
     name: <kebab-slug> # immutable after creation
     priority: P0 | P1 | P2 # immutable after creation
-    status: open | done | parked | blocked # mutable; prune done/parked before commit
+    status: open | done | parked | blocked | pending-validation
+    # mutable; prune done/parked before commit
+    # pending-validation: item is unblocked but depends on external validation before action
     title: <one-line> # immutable after creation
     description: <detail> # immutable after creation, null ok
     files: [<path>] # immutable after creation, omit if empty
-    completed: <YYYY-MM-DD> # only when status: done
+    completed: <YYYY-MM-DDTHH:MM:SSZ> # only when status: done
     extra: # append-only; never edit existing entries
-      - date: <YYYY-MM-DD>
+      - date: <YYYY-MM-DDTHH:MM:SSZ>
         type: note | blocker | decision | discovery | escalation | human-edit
         field: <field-name> # human-edit only: which field was changed
         value: <new-value> # human-edit only: the value set
-        reviewed: <YYYY-MM-DD> # set by handoff skill after handon acknowledges it
+        reviewed: <YYYY-MM-DDTHH:MM:SSZ> # set by handoff skill after handon acknowledges it
         note: <text>
 
 log:
-  - date: <YYYY-MM-DD>
+  - date: <YYYY-MM-DDTHH:MM:SSZ> # ISO 8601 datetime; use current time at session end
+    session: <n> # monotonically increasing integer; increment from last log entry
     summary: <one-liner of what finished or changed>
-    commits: [<short-hash>] # optional, recommended for finished work
+    commits: # optional, recommended for finished work
+      - sha: <short-hash>
+        branch: <branch-name> # branch the commit landed on (usually "main")
 ```
 
 ## Immutability Rules
@@ -61,7 +66,9 @@ after sync. Preserve `log` history.
 
 - `log` is durable and should remain in committed HANDOFF files
 - Use one line per finished work item or meaningful session outcome
-- Include commit hashes when known for finished work
+- `date` must be ISO 8601 with time (`YYYY-MM-DDTHH:MM:SSZ`) — bare dates are invalid
+- `session` is required — increment from the previous log entry's session number
+- Commits must use `{sha, branch}` object form — bare hash strings are invalid
 - Do not treat `log` as transient state
 
 ## Priority Guide

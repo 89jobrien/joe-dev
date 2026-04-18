@@ -71,10 +71,19 @@ cargo test 2>&1 | tail -5
 `reviewed` field that was surfaced by `handon` this session, add `reviewed: <today>` to that
 entry.
 
-**`log`** — prepend a new entry (newest first). This section is durable, not transient. Use one
-line, past tense, and include commit hashes for finished work when known.
+**`log`** — prepend a new entry (newest first). This section is durable, not transient. Required
+fields and formats:
+- `date`: ISO 8601 datetime at session end — `date -u +%Y-%m-%dT%H:%M:%SZ` — never a bare date
+- `session`: increment from the previous log entry's `session` value (start at 1 if no prior log)
+- `summary`: one line, past tense
+- `commits`: use `{sha, branch}` object form for each commit — never bare hash strings:
+  ```yaml
+  commits:
+    - sha: abc1234
+      branch: main
+  ```
 
-**`updated`** — set to today.
+**`updated`** — set to current UTC datetime: `date -u +%Y-%m-%dT%H:%M:%SZ`.
 
 ### 4. Write HANDOFF.yaml
 
