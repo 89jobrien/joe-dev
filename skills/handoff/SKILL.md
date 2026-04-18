@@ -75,6 +75,7 @@ entry.
 fields and formats:
 - `date`: ISO 8601 datetime at session end — `date +%Y%m%d:%H%M%S` — never a bare date
 - `session`: increment from the previous log entry's `session` value (start at 1 if no prior log)
+- `claude_session_id`: capture from `$CLAUDE_SESSION_ID` env var if set; omit the field if unset
 - `summary`: one line, past tense
 - `commits`: use `{sha, branch}` object form for each commit — never bare hash strings:
   ```yaml

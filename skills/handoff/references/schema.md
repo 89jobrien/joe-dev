@@ -35,6 +35,7 @@ items:
 log:
   - date: <YYYYMMDD:HHMMSS> # ISO 8601 datetime; use current time at session end
     session: <n> # monotonically increasing integer; increment from last log entry
+    claude_session_id: <id> # optional; $CLAUDE_SESSION_ID env var if set
     summary: <one-liner of what finished or changed>
     commits: # optional, recommended for finished work
       - sha: <short-hash>
