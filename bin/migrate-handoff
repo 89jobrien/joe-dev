@@ -37,4 +37,21 @@ NEW_PATH="${REPO_ROOT}/.ctx/HANDOFF.${PROJECT}.${BASE}.yaml"
 mkdir -p "${REPO_ROOT}/.ctx"
 git -C "$REPO_ROOT" mv "$OLD_PATH" "$NEW_PATH"
 
+# ---------------------------------------------------------------------------
+# Normalize timestamps in the migrated file
+# ---------------------------------------------------------------------------
+# Patterns handled:
+#   YYYY-MM-DDTHH:MM:SSZ  →  YYYYMMDD:HHMMSS
+#   YYYY-MM-DDTHH:MM:SS   →  YYYYMMDD:HHMMSS
+#   YYYY-MM-DD            →  YYYYMMDD:000000  (bare date, no time known)
+
+if command -v sed >/dev/null 2>&1; then
+    TMP=$(mktemp)
+    sed \
+        -e 's/\([0-9]\{4\}\)-\([0-9]\{2\}\)-\([0-9]\{2\}\)T\([0-9]\{2\}\):\([0-9]\{2\}\):\([0-9]\{2\}\)Z\{0,1\}/\1\2\3:\4\5\6/g' \
+        -e 's/\([0-9]\{4\}\)-\([0-9]\{2\}\)-\([0-9]\{2\}\)/\1\2\3:000000/g' \
+        "$NEW_PATH" > "$TMP" && mv "$TMP" "$NEW_PATH"
+    echo "migrate-handoff: timestamps normalized to YYYYMMDD:HHMMSS" >&2
+fi
+
 echo "$NEW_PATH"
