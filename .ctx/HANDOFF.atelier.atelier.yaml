@@ -1,19 +1,16 @@
 project: atelier
 id: atelier
-updated: 2026-04-16
-items:
-  - id: atelier-13
-    name: propagate-ctx-handoff-to-other-repos
-    priority: P2
-    status: open
-    title: Propagate .ctx/HANDOFF naming convention to other repos
-    description: |
-      handoff-init + handoff-detect now handle auto-migration and gitignore management.
-      Run `handoff-detect --init` in each priority repo to trigger init: minibox, devloop,
-      doob, braid. Any root-level HANDOFF.*.yaml will be auto-renamed to the new convention.
-    files: []
-    extra: []
+updated: 2026-04-17
+items: []
 log:
+  - date: 2026-04-17
+    summary: >
+      Completed atelier-13: migrated doob (9b0b832) and braid (88b3fb0) root-level
+      HANDOFF.*.workspace.yaml to .ctx/ naming convention. minibox and devloop were already
+      migrated. All 4 priority repos now on HANDOFF.<name>.<base>.yaml in .ctx/.
+    commits:
+      - 9b0b832
+      - 88b3fb0
   - date: 2026-04-16
     summary: >
       Updated plugin release metadata and added Codex mirror support: documented the local
