@@ -87,7 +87,7 @@ case "$CMD" in
         [ -f "$HANDOFF_PATH" ] || { echo "error: file not found: $HANDOFF_PATH" >&2; exit 3; }
 
         _init_db
-        NOW=$(date -u +%Y%m%d:%H%M%SZ)
+        NOW=$(date +%Y%m%d:%H%M%S)
         COUNT=$(yq '.items | length' "$HANDOFF_PATH")
 
         if [ "$COUNT" -eq 0 ]; then
@@ -104,10 +104,10 @@ case "$CMD" in
             session=$(  yq ".log[$j].session" "$HANDOFF_PATH")
             # Bare date check: must match YYYYMMDD:HHMMSSZ — warn if it doesn't
             case "$log_date" in
-                [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]:[0-9][0-9][0-9][0-9][0-9][0-9]Z)
+                [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]:[0-9][0-9][0-9][0-9][0-9][0-9])
                     : ;; # valid
                 *)
-                    echo "warning: log[$j].date '$log_date' is not YYYYMMDD:HHMMSSZ format" >&2
+                    echo "warning: log[$j].date '$log_date' is not YYYYMMDD:HHMMSS format" >&2
                     log_warnings=$(( log_warnings + 1 ))
                     ;;
             esac
@@ -199,7 +199,7 @@ case "$CMD" in
         [ -n "$PROJECT" ]  || die "--project is required"
         [ -n "$ITEM_ID" ]  || die "--id is required"
         _init_db
-        NOW=$(date -u +%Y%m%d:%H%M%SZ)
+        NOW=$(date +%Y%m%d:%H%M%S)
         sqlite3 "$DB" \
             "UPDATE items SET status='done', completed='${NOW}', updated='${NOW}'
              WHERE project='${PROJECT}' AND id='${ITEM_ID}';"
@@ -228,7 +228,7 @@ case "$CMD" in
         done
         [ "$status_valid" -eq 0 ] && die "unknown status '$NEW_STATUS' (valid: $VALID_STATUSES)"
         _init_db
-        NOW=$(date -u +%Y%m%d:%H%M%SZ)
+        NOW=$(date +%Y%m%d:%H%M%S)
         sqlite3 "$DB" \
             "UPDATE items SET status='${NEW_STATUS}', updated='${NOW}'
              WHERE project='${PROJECT}' AND id='${ITEM_ID}';"

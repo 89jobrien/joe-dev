@@ -73,7 +73,7 @@ entry.
 
 **`log`** — prepend a new entry (newest first). This section is durable, not transient. Required
 fields and formats:
-- `date`: ISO 8601 datetime at session end — `date -u +%Y%m%d:%H%M%SZ` — never a bare date
+- `date`: ISO 8601 datetime at session end — `date +%Y%m%d:%H%M%S` — never a bare date
 - `session`: increment from the previous log entry's `session` value (start at 1 if no prior log)
 - `summary`: one line, past tense
 - `commits`: use `{sha, branch}` object form for each commit — never bare hash strings:
@@ -83,7 +83,7 @@ fields and formats:
       branch: main
   ```
 
-**`updated`** — set to current UTC datetime: `date -u +%Y%m%d:%H%M%SZ`.
+**`updated`** — set to current UTC datetime: `date +%Y%m%d:%H%M%S`.
 
 ### 4. Write HANDOFF.yaml
 
