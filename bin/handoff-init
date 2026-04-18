@@ -102,7 +102,7 @@ PACKAGES=$(sort -u "$PKGS_TMP" | tr '[:upper:]' '[:lower:]' | tr ' /' '--')
 # Create state file stubs for each package (if absent)
 # ---------------------------------------------------------------------------
 
-TODAY=$(date +%Y-%m-%d)
+TODAY=$(date +%Y%m%d:%H%M%S)
 BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || echo unknown)
 
 for pkg in $PACKAGES; do
