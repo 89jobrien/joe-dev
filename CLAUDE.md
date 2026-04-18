@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Atelier** is a Claude Code plugin — a collection of skills and agents for personal dev workflow automation.
 It is not a compiled application. There is no build step; everything is markdown and YAML.
 
-Plugin version: `0.3.0` | Installed via the local marketplace at `~/.claude/plugins/local-marketplace/`.
+Plugin version: auto-managed (git-hash based) | Installed via the bazaar marketplace.
 
 ## Setup & Reinstall
 
@@ -34,24 +34,28 @@ atelier/
 `bin/` is added to PATH automatically by Claude Code when the plugin is installed. Scripts there
 are callable directly: `handoff-detect`, `handoff-init`, `handoff-db`, `handoff-reconcile`, `migrate-handoff`.
 
-### Skills (12)
+### Skills
 
 | Skill                | Trigger examples                                                     |
 | -------------------- | -------------------------------------------------------------------- |
+| `cap`                | "/cap", "commit and push", "ship it", "save progress"               |
 | `cargo-gate`         | "run gates", "validate rust", "pre-commit check"                     |
-| `sentinel-autofixer` | "apply review fixes", "fix sentinel suggestions"                     |
-| `hook-diagnostics`   | "show hook status", "what hooks ran"                                 |
-| `git-guard`          | "safe to commit", "check merge strategy"                             |
 | `ci-assist`          | "edit workflow", "fix CI", "check cross-compile"                     |
-| `project-pulse`      | "end session", "capture state", "session summary"                    |
+| `eod`                | "/eod", "end of day", "wrap up session"                              |
+| `git-guard`          | "safe to commit", "check merge strategy"                             |
 | `handoff`            | "write handoff", "end of session"                                    |
 | `handon`             | "start session", "orient to work", "what's outstanding"              |
-| `handup`             | "survey all projects", "what's open across repos"                    |
 | `handdown`           | "write back analysis", "annotate handoffs", "persist handup context" |
 | `handover`           | "visualize the handoff", "show handoff"                              |
-| `onboard`            | "onboard me", "how do I set up atelier"                              |
+| `handup`             | "survey all projects", "what's open across repos"                    |
+| `hook-diagnostics`   | "show hook status", "what hooks ran"                                 |
+| `minion`             | "dispatch subagent", "run in parallel", "fast subtask"               |
+| `onboard-atelier`    | "onboard me", "how do I set up atelier"                              |
+| `project-pulse`      | "end session", "capture state", "session summary"                    |
+| `sentinel-autofixer` | "apply review fixes", "fix sentinel suggestions"                     |
+| `valerie`            | "manage todos", "add task", "list todos"                             |
 
-### Agents (5)
+### Agents
 
 All agents are thin wrappers — domain logic lives in `devkit`. Do not embed behavior here.
 
@@ -62,6 +66,10 @@ All agents are thin wrappers — domain logic lives in `devkit`. Do not embed be
 | `herald`    | Cross-repo activity → Obsidian daily note                    |
 | `conductor` | devloop → doob → devkit workflow pipeline                    |
 | `oxidizer`  | Rust-specific review (clippy, unsafe, edition 2024)          |
+| `minion`    | General-purpose parallel worker for independent subtasks     |
+| `maxion`    | Structured task planner for complex or ambiguous items       |
+| `midion`    | Parallel worker dispatched by handon for backlog items       |
+| `workshop`  | Full-suite test agent — verifies skill loading and plugin surface |
 
 **Agent Permissions:**
 
@@ -134,15 +142,16 @@ configured: YYYY-MM-DD
 Each skill lives at `skills/<name>/SKILL.md`. After editing:
 
 1. Run `just reinstall` to reload into Claude Code.
-2. Verify trigger phrases in `plugin.json` match the skill's `when_to_use` section.
+2. Skills are auto-discovered from `skills/` — no `plugin.json` changes needed for new skills.
 3. Keep skills as procedural guides — steps Claude follows, not implementations.
 
 ## Editing `plugin.json`
 
-The manifest at `.claude-plugin/plugin.json` registers all skills and agents. After any change:
+The manifest at `.claude-plugin/plugin.json` registers plugin metadata and agents. After any change:
 
 ```bash
 just reinstall
 ```
 
-If the skill cache appears stale, bump the `version` field to force invalidation.
+The `version` field is auto-set by the post-commit hook to the current git hash — do not set it
+manually.
