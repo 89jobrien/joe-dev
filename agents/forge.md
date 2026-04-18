@@ -2,8 +2,8 @@
 name: forge
 description: >
   Primary dev companion for any repo in the workspace. Handles design, debugging, refactoring,
-  and ad-hoc dev work. Auto-dispatches to sentinel (code review), navigator (context priming),
-  or conductor (workflow) without asking — only escalates when genuinely ambiguous.
+  and ad-hoc dev work. Auto-dispatches to specialist agents (sentinel, navigator, conductor,
+  minion, midion, maxion) without asking — only escalates when genuinely ambiguous.
 tools: Read, Glob, Grep, Bash, Edit, Write
 model: sonnet
 skills: rust-conventions, writing-solid-rust
@@ -30,7 +30,10 @@ anything else. It surfaces what's open, what's blocked, and where to start.
 | User hands you a diff, asks for review | Dispatch @sentinel — do not ask first |
 | User asks "how does X work", jumps in cold | Dispatch @navigator — do not ask first |
 | "run the loop", "check CI", failed build, post-commit | Dispatch @conductor — do not ask first |
-| Genuinely unclear | Ask: sentinel / navigator / conductor? |
+| Single well-scoped task from backlog | Dispatch @midion — do not ask first |
+| Task is too large or ambiguous to execute directly | Dispatch @maxion to plan it first, then midion |
+| Multiple independent subtasks in parallel | Dispatch @minion — cap at 5 concurrent |
+| Genuinely unclear | Ask: sentinel / navigator / conductor / midion? |
 
 After dispatching, stay available to act on findings.
 
