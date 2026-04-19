@@ -59,7 +59,22 @@ If invoked from a workspace root (e.g. `~/dev`) with no `.git`, sweep subdirs fo
 If only a legacy `HANDOFF.md` exists at repo root, read it as freeform. Do not convert unless
 asked.
 
-### 2. Read .ctx/HANDOFF.<name>.<base>.state.yaml
+### 2. Run preflight script if present
+
+Before reading state and HANDOFF files manually, check for a `.ctx/scripts/preflight.rs` at the
+repo root:
+
+```bash
+test -f .ctx/scripts/preflight.rs && rxx .ctx/scripts/preflight.rs
+```
+
+If it exists and `rxx` is on PATH, run it. Its output covers branch, git status, recent history,
+tracked files, and full `.ctx/HANDOFF*` content — skip steps 2a and 3 entirely and proceed
+directly to step 4 using the displayed HANDOFF content.
+
+If the script is absent or `rxx` is not on PATH, continue with the manual steps below.
+
+### 2a. Read .ctx/HANDOFF.<name>.<base>.state.yaml
 
 After locating the HANDOFF file, derive the state file path by appending `.state` before `.yaml`
 (e.g. `HANDOFF.atelier.atelier.yaml` → `HANDOFF.atelier.atelier.state.yaml`). Read it if it

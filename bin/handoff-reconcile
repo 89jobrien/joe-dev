@@ -1,5 +1,9 @@
 #!/bin/sh
 set -eu
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
-exec "$SCRIPT_DIR/../skills/valerie/helpers/handoff-reconcile.sh" "$@"
+SCRIPT=$(ls "$HOME/.claude/plugins/cache/bazaar/valerie/"*/skills/valerie/helpers/handoff-reconcile.sh 2>/dev/null | tail -1)
+if [ -z "$SCRIPT" ]; then
+  echo "handoff-reconcile: could not find handoff-reconcile.sh in valerie plugin cache" >&2
+  exit 1
+fi
+exec "$SCRIPT" "$@"
