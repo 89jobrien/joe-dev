@@ -83,15 +83,17 @@ HANDOFF_MD="$CTX_DIR/HANDOFF.md"
     printf '| ID | P | Status | Title |\n'
     printf '|---|---|---|---|\n'
 
-    # Sort: open items by priority (P0→P2), then blocked by priority
+    # Emit open items first (sorted by priority string P0→P2), then blocked.
+    # Two-pass: yq handles each filter separately and concatenates output.
     yq -r '
-      (.items // []) |
-      sort_by(
-        (if .status == "blocked" then 10 else 0 end) +
-        ((.priority // "P2") | ltrimstr("P") | tonumber? // 2)
-      ) |
+      (.items // []) | map(select(.status != "blocked")) | sort_by(.priority) |
       .[] |
       "| " + (.id // "-") + " | " + (.priority // "-") + " | " + (.status // "open") + " | " + (.name // "-") + " |"
+    ' "$HANDOFF_PATH" 2>/dev/null || true
+    yq -r '
+      (.items // []) | map(select(.status == "blocked")) | sort_by(.priority) |
+      .[] |
+      "| " + (.id // "-") + " | " + (.priority // "-") + " | blocked | " + (.name // "-") + " |"
     ' "$HANDOFF_PATH" 2>/dev/null || true
 
     printf '\n## Log\n\n'
