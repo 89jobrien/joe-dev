@@ -131,31 +131,33 @@ reconciler itself.
 If the script is not found or exits non-zero, stop and report the failure instead of silently
 continuing.
 
-### 7. Generate .ctx/HANDOFF.md
+### 7. Generate .ctx/HANDOFF.md and .ctx/HANDOVER.md
 
-Render a combined reference doc from both files. Overwrite completely.
+Run the helper script to write both rendered docs in one step:
 
-```markdown
-# Handoff — <project> (<updated>)
-
-**Branch:** <branch> | **Build:** <build> | **Tests:** <tests>
-<notes if non-null>
-
-## Items
-
-| ID | P | Status | Title |
-|---|---|---|---|
-| <id> | <P> | <status> | <title> |
-
-## Log
-
-- <date>: <summary> [<commits>]
+```bash
+generate-ctx-docs \
+  --handoff <path-to-HANDOFF.yaml> \
+  --state   <path-to-HANDOFF.state.yaml> \
+  --ctx     <repo-root>/.ctx
 ```
 
-Rules:
-- Items sorted P0 → P2, open before blocked
+`generate-ctx-docs` is available on PATH via the plugin's `bin/`. It prefers `nu` if present
+and falls back to POSIX sh. Both files are overwritten completely.
+
+**HANDOFF.md** — combined reference doc:
+- Header: project, updated timestamp, branch/build/tests from state file
+- Items table sorted P0 → P2, open before blocked
 - Log: last 5 entries only
-- No diagrams — those are for `/atelier:handover`
+
+**HANDOVER.md** — static ASCII dependency/flow diagram:
+- Item flow with `[ ]` open / `[!]` blocked / `[x]` done symbols
+- `depends_on` shown inline when present
+- Recent sessions (last 5 log entries)
+
+If the helper is not found or exits non-zero, fall back to writing `.ctx/HANDOFF.md` inline
+using the Write tool (template from the previous step format). Skip HANDOVER.md in that case
+and note the failure.
 
 ### 8. Ensure .gitignore covers .ctx/
 
@@ -186,7 +188,7 @@ git commit -m "docs: update handoff"
 ```
 
 Stage only the durable HANDOFF file under `.ctx/` plus any `.gitignore` update required for the
-managed block. Never stage `.ctx/HANDOFF.*.state.yaml` or `.ctx/HANDOFF.md`.
+managed block. Never stage `.ctx/HANDOFF.*.state.yaml`, `.ctx/HANDOFF.md`, or `.ctx/HANDOVER.md`.
 
 ## Creating from Scratch
 

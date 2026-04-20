@@ -1,0 +1,14 @@
+#!/bin/sh
+# generate-ctx-docs — dispatcher for generate-ctx-docs helpers.
+# Prefers nu if available; falls back to sh.
+#
+# Usage: generate-ctx-docs --handoff <path> [--state <path>] [--ctx <dir>]
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+HELPERS_DIR="$SCRIPT_DIR/../skills/handoff/helpers"
+
+if command -v nu >/dev/null 2>&1; then
+    exec nu "$HELPERS_DIR/generate-ctx-docs.nu" "$@"
+else
+    exec sh "$HELPERS_DIR/generate-ctx-docs.sh" "$@"
+fi
