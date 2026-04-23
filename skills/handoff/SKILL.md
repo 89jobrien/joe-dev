@@ -1,6 +1,7 @@
 ---
 name: handoff
-description: Use at end of a session to update HANDOFF.yaml with completed work, new gaps
+description:
+  Use at end of a session to update HANDOFF.yaml with completed work, new gaps
   discovered, and current project state. Also use when asked to create a HANDOFF.yaml for
   a project that doesn't have one yet.
 model: sonnet
@@ -48,6 +49,7 @@ read it as freeform. Do not convert unless asked.
 ## Steps
 
 ### 1. Get current state
+
 ```bash
 git branch --show-current
 git log --oneline -5
@@ -60,6 +62,7 @@ cargo test 2>&1 | tail -5
 ### 3. Update HANDOFF.yaml
 
 **`items`** — apply immutability rules (see `references/schema.md`):
+
 - New gap → append with new `id`
 - Completed or closed upstream → remove the item from `items` after recording the outcome in
   `log`
@@ -73,7 +76,8 @@ entry.
 
 **`log`** — prepend a new entry (newest first). This section is durable, not transient. Required
 fields and formats:
-- `date`: ISO 8601 datetime at session end — `date +%Y%m%d:%H%M%S` — never a bare date
+
+- `date`: ISO 8601 datetime at session end — `date +%Y%m%d.%H%M%S` — never a bare date
 - `session`: increment from the previous log entry's `session` value (start at 1 if no prior log)
 - `claude_session_id`: capture from `$CLAUDE_SESSION_ID` env var if set; omit the field if unset
 - `summary`: one line, past tense
@@ -84,7 +88,7 @@ fields and formats:
       branch: main
   ```
 
-**`updated`** — set to current UTC datetime: `date +%Y%m%d:%H%M%S`.
+**`updated`** — set to current UTC datetime: `date +%Y%m%d.%H%M%S`.
 
 ### 4. Write HANDOFF.yaml
 
@@ -146,11 +150,13 @@ generate-ctx-docs \
 and falls back to POSIX sh. Both files are overwritten completely.
 
 **HANDOFF.md** — combined reference doc:
+
 - Header: project, updated timestamp, branch/build/tests from state file
 - Items table sorted P0 → P2, open before blocked
 - Log: last 5 entries only
 
 **HANDOVER.md** — static ASCII dependency/flow diagram:
+
 - Item flow with `[ ]` open / `[!]` blocked / `[x]` done symbols
 - `depends_on` shown inline when present
 - Recent sessions (last 5 log entries)
@@ -162,6 +168,7 @@ and note the failure.
 ### 8. Ensure .gitignore covers .ctx/
 
 Verify `.gitignore` has:
+
 ```
 .ctx/*
 !.ctx/HANDOFF.*.yaml

@@ -15,8 +15,14 @@ set -eu
 FORCE=0
 while [ $# -gt 0 ]; do
     case "$1" in
-        --force) FORCE=1; shift ;;
-        *) echo "error: unknown argument: $1" >&2; exit 1 ;;
+    --force)
+        FORCE=1
+        shift
+        ;;
+    *)
+        echo "error: unknown argument: $1" >&2
+        exit 1
+        ;;
     esac
 done
 
@@ -77,22 +83,22 @@ _gomod_name() {
 # Scan manifests
 for manifest in $(find "$REPO_ROOT" -name "Cargo.toml" -not -path "*/target/*" -not -path "*/.git/*" 2>/dev/null); do
     name=$(_cargo_name "$manifest")
-    [ -n "$name" ] && echo "$name" >> "$PKGS_TMP"
+    [ -n "$name" ] && echo "$name" >>"$PKGS_TMP"
 done
 
 for manifest in $(find "$REPO_ROOT" -name "pyproject.toml" -not -path "*/.git/*" -not -path "*/__pycache__/*" 2>/dev/null); do
     name=$(_pyproject_name "$manifest")
-    [ -n "$name" ] && echo "$name" >> "$PKGS_TMP"
+    [ -n "$name" ] && echo "$name" >>"$PKGS_TMP"
 done
 
 for manifest in $(find "$REPO_ROOT" -name "go.mod" -not -path "*/.git/*" -not -path "*/vendor/*" 2>/dev/null); do
     name=$(_gomod_name "$manifest")
-    [ -n "$name" ] && echo "$name" >> "$PKGS_TMP"
+    [ -n "$name" ] && echo "$name" >>"$PKGS_TMP"
 done
 
 # Fallback: repo root dir name if no manifests found
 if [ ! -s "$PKGS_TMP" ]; then
-    echo "$BASE" >> "$PKGS_TMP"
+    echo "$BASE" >>"$PKGS_TMP"
 fi
 
 # Deduplicate, sanitize, sort
@@ -102,13 +108,13 @@ PACKAGES=$(sort -u "$PKGS_TMP" | tr '[:upper:]' '[:lower:]' | tr ' /' '--')
 # Create state file stubs for each package (if absent)
 # ---------------------------------------------------------------------------
 
-TODAY=$(date +%Y%m%d:%H%M%S)
+TODAY=$(date +%Y%m%d.%H%M%S)
 BRANCH=$(git -C "$REPO_ROOT" branch --show-current 2>/dev/null || echo unknown)
 
 for pkg in $PACKAGES; do
     state_file="${CTX}/HANDOFF.${pkg}.${BASE}.state.yaml"
     if [ ! -f "$state_file" ]; then
-        cat > "$state_file" <<EOF
+        cat >"$state_file" <<EOF
 updated: ${TODAY}
 branch: ${BRANCH}
 build: unknown
@@ -138,7 +144,7 @@ trap 'rm -f "$PKGS_TMP" "$BLOCK_TMP"' EXIT
     echo "!.ctx/handoff.*.config.toml.example"
     echo ".ctx/.initialized"
     echo "# handoff-end"
-} > "$BLOCK_TMP"
+} >"$BLOCK_TMP"
 
 BEGIN="# handoff-begin"
 END="# handoff-end"
@@ -155,17 +161,17 @@ if grep -q "^${BEGIN}$" "$GITIGNORE" 2>/dev/null; then
         skip && $0 == end { skip=0; next }
         skip { next }
         { print }
-    ' "$GITIGNORE" > "$GITIGNORE_TMP" && mv "$GITIGNORE_TMP" "$GITIGNORE"
+    ' "$GITIGNORE" >"$GITIGNORE_TMP" && mv "$GITIGNORE_TMP" "$GITIGNORE"
 else
     # Append block
-    printf '\n' >> "$GITIGNORE"
-    cat "$BLOCK_TMP" >> "$GITIGNORE"
+    printf '\n' >>"$GITIGNORE"
+    cat "$BLOCK_TMP" >>"$GITIGNORE"
 fi
 
 # ---------------------------------------------------------------------------
 # Write token
 # ---------------------------------------------------------------------------
 
-echo "$TODAY" > "$TOKEN"
+echo "$TODAY" >"$TOKEN"
 
 echo "handoff-init: initialized ${CTX} (base=${BASE}, packages=$(echo "$PACKAGES" | tr '\n' ' ' | sed 's/ $//'))"
