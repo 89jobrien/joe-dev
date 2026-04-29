@@ -1,15 +1,47 @@
 ---
 name: merge
 description: >
-  Use when the user wants to merge a branch, resolve conflicts, or integrate remote changes.
-  Covers fetch, merge, conflict resolution, and verification.
+  Use when the user wants to merge a branch, resolve conflicts, integrate remote changes, or
+  recover from a push rejection. Covers push rejection triage, fetch, merge strategy selection,
+  conflict resolution, and verification.
 allowed-tools: Read, Bash, Glob, Grep
 ---
 
 # merge — Safe Branch Integration
 
-Automated merge workflow: pre-merge verification → fetch → merge strategy selection → conflict
-resolution → verification.
+Automated merge workflow: push rejection recovery → pre-merge verification → fetch → merge
+strategy selection → conflict resolution → verification.
+
+## Step 0 — Push Rejection Recovery
+
+If you are here because `git push` was rejected, diagnose the reason first:
+
+```bash
+git push 2>&1
+```
+
+Common rejection reasons:
+
+| Output contains | Cause | Action |
+|---|---|---|
+| `non-fast-forward` | Remote has commits you don't have | Fetch and integrate (continue below) |
+| `rejected ... (fetch first)` | Same as above | Fetch and integrate (continue below) |
+| `rejected ... (stale info)` | Force-push needed (feature branch only) | Ask user before force-pushing |
+| `Permission denied` | Auth failure | Check SSH key / 1Password agent |
+
+**For non-fast-forward rejections — assess the divergence:**
+
+```bash
+git fetch origin
+git log --oneline HEAD..origin/<branch>   # commits on remote you don't have
+git log --oneline origin/<branch>..HEAD   # your commits not yet on remote
+```
+
+- If only remote has new commits: integrate them (fetch + merge/rebase), then push again
+- If both sides diverged: requires conflict resolution — continue to Step 4
+- If only you have new commits: remote was reset or force-pushed — confirm with user before acting
+
+Never force-push to `main`. Feature branches only, and only with explicit user instruction.
 
 ## Step 1 — Pre-Merge Check
 
@@ -166,11 +198,13 @@ If the merge was already complete, note that no action was needed.
 
 ## Key Rules
 
+- **Push rejected? Diagnose before acting** — check if remote diverged, don't blindly force-push
 - **Never rebase branches with merge commits** — use merge instead
 - **Always verify with `git log --oneline main..branch`** — if empty, merge is complete
 - **Never abort merge without showing the diff** — preserve local changes
 - **Always let hooks run** — never use `--no-verify`
 - **Decide conflict resolution by intent, not blindly accepting ours/theirs**
+- **Never force-push `main`** — feature branches only, explicit user instruction required
 
 ## Additional Resources
 
